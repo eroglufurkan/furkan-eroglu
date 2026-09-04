@@ -33,14 +33,14 @@ export default function PanelShell({
         type="button"
         aria-label="Close panel"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-void/70 backdrop-blur-[2px] md:bg-void/40 md:backdrop-blur-0"
+        className="panel-backdrop absolute inset-0 cursor-default backdrop-blur-[2px] md:backdrop-blur-0"
       />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-rise relative z-10 flex max-h-[88vh] w-full flex-col border border-ash-600 bg-ash-900/97 shadow-[0_0_0_1px_rgba(0,0,0,0.6),0_24px_60px_-20px_rgba(0,0,0,0.9)] md:max-h-[86%] md:w-[80%] md:max-w-xl"
+        className="animate-rise panel-shadow relative z-10 flex max-h-[88vh] w-full flex-col border border-ash-600 bg-ash-900/97 md:max-h-[86%] md:w-[80%] md:max-w-xl"
       >
         {/* Ember hairline along the top edge. */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-ember-dim to-transparent" />

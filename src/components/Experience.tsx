@@ -1,9 +1,17 @@
 "use client";
 
-import { useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import PortfolioView from "./PortfolioView";
 import RoomStage from "./RoomStage";
+import ThemeToggle from "./ThemeToggle";
 import { PROFILE } from "@/content/portfolio";
+import {
+  DEFAULT_THEME,
+  THEMES,
+  THEME_STORAGE_KEY,
+  isThemeId,
+  type ThemeId,
+} from "@/game/theme";
 
 type Mode = "portfolio" | "play";
 
@@ -15,32 +23,60 @@ export default function Experience() {
   // is always in the HTML. Desktop switches to the room before the first paint.
   const [mode, setMode] = useState<Mode>("portfolio");
   const [touch, setTouch] = useState(false);
+  const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME);
 
   useLayoutEffect(() => {
     setTouch(window.matchMedia("(pointer: coarse)").matches);
     if (window.innerWidth >= PLAYABLE_WIDTH) setMode("play");
+
+    // The inline script in the document head already applied this to <html>;
+    // reading it back only keeps React in step with what is on screen.
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    } catch {
+      // Blocked storage: fall through to the default theme.
+    }
+    if (isThemeId(stored)) setTheme(stored);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => {
+      const next: ThemeId = current === "dark" ? "bright" : "dark";
+      document.documentElement.dataset.theme = next;
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch {
+        // Private mode: the choice just will not persist.
+      }
+      return next;
+    });
   }, []);
 
   const playing = mode === "play";
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <header className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <header className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-3 px-4 py-4 sm:px-6">
         <p className="min-w-0 truncate font-mono text-[10px] tracking-[0.22em] text-bone-faint uppercase">
           {playing ? "Room 01" : PROFILE.name}
         </p>
 
-        <div
-          role="tablist"
-          aria-label="View mode"
-          className="flex items-center gap-1 border border-ash-700 p-1"
-        >
-          <ModeButton active={playing} onClick={() => setMode("play")}>
-            Play
-          </ModeButton>
-          <ModeButton active={!playing} onClick={() => setMode("portfolio")}>
-            View Portfolio
-          </ModeButton>
+        <div className="flex items-center gap-2">
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+          <div
+            role="tablist"
+            aria-label="View mode"
+            className="flex items-center gap-1 border border-ash-700 p-1"
+          >
+            <ModeButton active={playing} onClick={() => setMode("play")}>
+              Play
+            </ModeButton>
+            <ModeButton active={!playing} onClick={() => setMode("portfolio")}>
+              View Portfolio
+            </ModeButton>
+          </div>
         </div>
       </header>
 
@@ -59,7 +95,7 @@ export default function Experience() {
                 : "min(1120px, calc((100dvh - 215px) * 1.75))",
             }}
           >
-            <RoomStage touch={touch} />
+            <RoomStage touch={touch} theme={THEMES[theme]} />
           </div>
         ) : (
           <PortfolioView />

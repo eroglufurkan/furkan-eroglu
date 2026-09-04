@@ -2,10 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { GameEngine } from "@/game/engine";
+import type { RoomTheme } from "@/game/theme";
 import type { Interactable, PanelId } from "@/game/types";
 import { ROOM_H, ROOM_W } from "@/game/world";
 
 type Props = {
+  theme: RoomTheme;
   paused: boolean;
   onFocus: (target: Interactable | null) => void;
   onInteract: (panel: PanelId) => void;
@@ -14,6 +16,7 @@ type Props = {
 };
 
 export default function GameCanvas({
+  theme,
   paused,
   onFocus,
   onInteract,
@@ -27,11 +30,15 @@ export default function GameCanvas({
   const cbs = useRef({ onFocus, onInteract, onFirstMove, onReady });
   cbs.current = { onFocus, onInteract, onFirstMove, onReady };
 
+  // The engine is created once; the theme is pushed in as it changes.
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = new GameEngine(canvas, {
+    const engine = new GameEngine(canvas, themeRef.current, {
       onFocus: (t) => cbs.current.onFocus(t),
       onInteract: (p) => cbs.current.onInteract(p),
       onFirstMove: () => cbs.current.onFirstMove?.(),
@@ -53,6 +60,10 @@ export default function GameCanvas({
   useEffect(() => {
     engineRef.current?.setPaused(paused);
   }, [paused]);
+
+  useEffect(() => {
+    engineRef.current?.setTheme(theme);
+  }, [theme]);
 
   return (
     <canvas

@@ -1,4 +1,5 @@
 import { createRenderer, type Renderer } from "./render";
+import type { RoomTheme } from "./theme";
 import type { Facing, GameState, Interactable, PanelId, Rect } from "./types";
 import {
   INTERACTABLES,
@@ -49,9 +50,10 @@ export class GameEngine {
 
   constructor(
     canvas: HTMLCanvasElement,
+    theme: RoomTheme,
     private cb: EngineCallbacks,
   ) {
-    this.renderer = createRenderer(canvas);
+    this.renderer = createRenderer(canvas, theme);
     this.state = {
       player: {
         pos: { ...SPAWN },
@@ -88,6 +90,11 @@ export class GameEngine {
   setPaused(paused: boolean) {
     this.state.paused = paused;
     if (paused) this.releaseAll();
+  }
+
+  /** Repaints the room in another theme, mid-game. */
+  setTheme(theme: RoomTheme) {
+    this.renderer.setTheme(theme);
   }
 
   /** Touch joystick input, already normalised to the unit circle. */

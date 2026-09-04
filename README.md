@@ -9,6 +9,11 @@ Next.js (App Router) · TypeScript · Tailwind CSS · plain Canvas 2D. No game
 engine, no sprite assets — the room is drawn from code, so the whole thing is a
 few kilobytes of JavaScript.
 
+The room comes in two themes, swapped with the sun/moon button in the header:
+**Dark** (a dim industrial basement) and **Bright** (the same room at midday,
+repainted in colour). The choice is remembered in `localStorage` and applied
+before the first paint, so there is no flash of the wrong room.
+
 ## Run it
 
 ```bash
@@ -44,13 +49,15 @@ src/
                           you need to touch to add a project
   game/
     types.ts              shared shapes
-    world.ts              room dimensions, furniture, collision, lights,
-                          interactables
+    theme.ts              the two palettes: every colour, light and emissive
+                          panel the room is drawn with
+    world.ts              room dimensions, furniture, collision, interactables
     engine.ts             loop, input, movement, collision, focus detection
     render.ts             all drawing: room, character, lighting, atmosphere
   components/
     Experience.tsx        play / portfolio mode switch
     RoomStage.tsx         the room frame and its overlays
+    ThemeToggle.tsx       the dark / bright switch
     GameCanvas.tsx        canvas + engine lifecycle
     InteractPrompt.tsx    the floating [E] label
     TouchControls.tsx     thumbstick + interact button
@@ -69,6 +76,13 @@ src/
 4. Route the new id in `components/panels/PanelHost.tsx`.
 
 The project shows up in the plain portfolio view automatically.
+
+## Adding a theme
+
+Add a `RoomTheme` to `src/game/theme.ts` — TypeScript will list any colour token
+you forgot — then add matching CSS variables under a
+`html[data-theme="..."]` block in `src/app/globals.css` for the page chrome.
+No component knows which theme it is in.
 
 ## Mobile
 

@@ -85,31 +85,6 @@ export const INTERACTABLES: readonly Interactable[] = [
   },
 ];
 
-export type Light = {
-  pos: Vec2;
-  radius: number;
-  /** [r, g, b] of the additive tint. */
-  color: [number, number, number];
-  intensity: number;
-  /** 0 = steady, higher = more restless. */
-  flicker: number;
-};
-
-export const LIGHTS: readonly Light[] = [
-  // Desk lamp over the laptop.
-  { pos: { x: 106, y: 62 }, radius: 108, color: [255, 176, 96], intensity: 1, flicker: 0.06 },
-  // Monitor glow.
-  { pos: { x: 344, y: 58 }, radius: 100, color: [128, 196, 224], intensity: 0.95, flicker: 0.12 },
-  // Server rack LEDs.
-  { pos: { x: 34, y: 130 }, radius: 62, color: [120, 220, 150], intensity: 0.7, flicker: 0.2 },
-  // Light bleeding around the door.
-  { pos: { x: 428, y: 128 }, radius: 78, color: [200, 214, 224], intensity: 0.85, flicker: 0.03 },
-  // Bench lamp.
-  { pos: { x: 96, y: 190 }, radius: 82, color: [255, 168, 104], intensity: 0.8, flicker: 0.05 },
-  // Ceiling lamp over the central area.
-  { pos: { x: 224, y: 156 }, radius: 100, color: [226, 206, 176], intensity: 0.9, flicker: 0.09 },
-];
-
 export function rectsOverlap(a: Rect, b: Rect): boolean {
   return (
     a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y

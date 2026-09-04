@@ -6,11 +6,18 @@ import InteractPrompt from "./InteractPrompt";
 import TouchControls from "./TouchControls";
 import PanelHost from "./panels/PanelHost";
 import type { GameEngine } from "@/game/engine";
+import type { RoomTheme } from "@/game/theme";
 import type { Interactable, PanelId } from "@/game/types";
 import { PROFILE } from "@/content/portfolio";
 import { ROOM_H, ROOM_W, TITLE_ANCHOR } from "@/game/world";
 
-export default function RoomStage({ touch }: { touch: boolean }) {
+export default function RoomStage({
+  touch,
+  theme,
+}: {
+  touch: boolean;
+  theme: RoomTheme;
+}) {
   const [focused, setFocused] = useState<Interactable | null>(null);
   const [panel, setPanel] = useState<PanelId | null>(null);
   const [moved, setMoved] = useState(false);
@@ -27,10 +34,11 @@ export default function RoomStage({ touch }: { touch: boolean }) {
   return (
     <div className="flex w-full flex-col">
       <div
-        className="room-grain relative w-full overflow-hidden border border-ash-600 bg-void shadow-[0_0_0_1px_rgba(0,0,0,0.7),0_40px_90px_-40px_rgba(0,0,0,0.95)]"
+        className="room-grain room-shadow relative w-full overflow-hidden border border-ash-600 bg-void"
         style={{ aspectRatio: `${ROOM_W} / ${ROOM_H}` }}
       >
         <GameCanvas
+          theme={theme}
           paused={panel !== null}
           onFocus={setFocused}
           onInteract={setPanel}
@@ -42,10 +50,10 @@ export default function RoomStage({ touch }: { touch: boolean }) {
 
         {/* Name card, painted into the middle of the room above the rug. */}
         <div
-          className="pointer-events-none absolute inset-x-0 z-10 -translate-y-full px-3 text-center"
+          className="title-shadow pointer-events-none absolute inset-x-0 z-10 -translate-y-full px-3 text-center"
           style={{ top: `${(TITLE_ANCHOR.y / ROOM_H) * 100}%` }}
         >
-          <h1 className="text-[clamp(0.85rem,2.1vw,1.4rem)] font-medium tracking-[0.2em] text-bone/85 uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+          <h1 className="text-[clamp(0.85rem,2.1vw,1.4rem)] font-medium tracking-[0.2em] text-bone/85 uppercase">
             {PROFILE.name}
           </h1>
           <p className="mt-1 font-mono text-[clamp(0.45rem,1vw,0.7rem)] tracking-[0.2em] text-bone-faint uppercase">
