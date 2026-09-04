@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  /* Room palette. Kept deliberately narrow: near-black, warm off-white, one ember accent. */
+  --color-void: #07080a;
+  --color-ash-900: #0c0e11;
+  --color-ash-800: #12151a;
+  --color-ash-700: #191d23;
+  --color-ash-600: #232830;
+  --color-ash-500: #333a44;
+  --color-bone: #ded9d0;
+  --color-bone-dim: #a4a09a;
+  --color-bone-faint: #6f6d69;
+  --color-ember: #d99a52;
+  --color-ember-dim: #8a6234;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* The room is drawn at 448x256 and upscaled, so keep the pixels hard. */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ash-600) transparent;
+}
+.panel-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-ash-600);
+  border-radius: 999px;
+}
+
+/* Faint scanline/noise wash over the whole page for texture. */
+.room-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.018) 0px,
+    rgba(255, 255, 255, 0.018) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 220ms ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 400ms ease-out both;
+}
+
+@keyframes prompt-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.animate-prompt {
+  animation: prompt-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-fade-in,
+  .animate-prompt {
+    animation: none;
+  }
+}
+
+/* One focus ring for the whole site, in the room's accent colour. */
+:focus-visible {
+  outline: 1px solid var(--color-ember);
+  outline-offset: 2px;
+}
