@@ -73,6 +73,7 @@ const EN = {
   carryingWater: "Carrying water",
   holdKey: "hold",
   resetBall: "reset",
+  drink: "drink",
 } as const;
 
 export type StringKey = keyof typeof EN;
@@ -140,6 +141,7 @@ const TR: Record<StringKey, string> = {
   carryingWater: "Elinde su var",
   holdKey: "basılı tut",
   resetBall: "sıfırla",
+  drink: "iç",
 };
 
 const TABLE: Record<LanguageId, Record<StringKey, string>> = { en: EN, tr: TR };

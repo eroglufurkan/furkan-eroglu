@@ -54,6 +54,9 @@ export type EngineCallbacks = {
   onFirstMove?: () => void;
 };
 
+/** How long a sip takes, start to empty cup. */
+const DRINK_SECONDS = 1.6;
+
 function ballBox(pos: Vec2): Rect {
   return {
     x: pos.x - BALL_RADIUS,
@@ -209,6 +212,17 @@ export class GameEngine {
     this.setInteractDown(false);
   }
 
+  /** A sip from the carried cup: a short animation, no holding required. */
+  drink() {
+    const player = this.state.player;
+    if (this.state.paused) return;
+    if (!player.carryingWater || player.activity !== "none") return;
+    player.activity = "drink";
+    player.activityProgress = 0;
+    player.waveFor = 0;
+    this.audio.sip();
+  }
+
   /** Sends the ball back to where it started. */
   resetBall() {
     const ball = this.state.ball;
@@ -240,6 +254,8 @@ export class GameEngine {
   }
 
   private cancelHold() {
+    // Nothing to cancel, and no business clearing a drink that is under way.
+    if (this.holdTargetId === null) return;
     this.holdTargetId = null;
     this.holdElapsed = 0;
     this.state.player.activity = "none";
@@ -455,8 +471,9 @@ export class GameEngine {
       else facing = axis.y > 0 ? "down" : "up";
       p.facing = facing;
 
-      // Two footfalls per four-frame cycle.
-      if (Math.floor(p.walkPhase / 2) !== Math.floor(this.lastStepPhase / 2)) {
+      // One footfall per four-frame cycle. The legs keep their own pace;
+      // this only sets how often the sound repeats.
+      if (Math.floor(p.walkPhase / 4) !== Math.floor(this.lastStepPhase / 4)) {
         this.audio.step(pointInRect(p.pos, RUG) ? "rug" : "floor");
       }
       this.lastStepPhase = p.walkPhase;
@@ -473,6 +490,22 @@ export class GameEngine {
       if (p.waveFor > 0) p.waveFor = Math.max(0, p.waveFor - dt);
     }
     p.moving = moving;
+
+    if (p.activity === "drink") {
+      if (moving) {
+        // Walking off cancels the sip, and the water is kept.
+        p.activity = "none";
+        p.activityProgress = 0;
+      } else {
+        p.activityProgress += dt / DRINK_SECONDS;
+        if (p.activityProgress >= 1) {
+          p.activity = "none";
+          p.activityProgress = 0;
+          p.carryingWater = false;
+          this.cb.onCarryChange(false);
+        }
+      }
+    }
   }
 
   /** Moves the ball on one axis, reverting if that would put it inside a solid. */

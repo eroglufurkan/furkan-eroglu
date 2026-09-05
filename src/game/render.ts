@@ -529,8 +529,8 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
     px(ctx, x - 3, top + 2, 6, 1, C.hoodLight);
   }
 
-  // Hands: filling at the tap, tipping the cup over a pot, or just carrying.
-  if (player.activity !== "none") {
+  // Hands: filling at the tap, tipping a cup over a pot, drinking, or carrying.
+  if (player.activity === "fill" || player.activity === "water") {
     const progress = player.activityProgress;
     let hx = x + 6;
     let hy = top + 8;
@@ -551,7 +551,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
         const d = (s.time * 44 + i * 4) % 12;
         px(ctx, hx + 1, hy - 12 + d, 1, 2, C.cupWater);
       }
-    } else {
+    } else if (player.activity === "water") {
       // Cup empties out, droplets landing on the soil.
       const level = Math.round((1 - progress) * 4);
       if (level > 0) px(ctx, hx, hy + 5 - level, 4, level, C.cupWater);
@@ -560,6 +560,23 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
         const d = (s.time * 40 + i * 5) % 14;
         px(ctx, hx + 5, hy + 3 + d, 1, 2, C.cupWater);
       }
+    }
+  } else if (player.activity === "drink") {
+    // The cup rises to the face, then drains as they swallow.
+    const progress = player.activityProgress;
+    const rise = Math.min(1, progress / 0.3);
+    const dx = x - 2;
+    const dy = top + 9 - Math.round(rise * 7);
+
+    // Arm folds up with the cup.
+    px(ctx, x + 3, top + 7, 2, Math.max(1, 6 - Math.round(rise * 3)), C.coatDark);
+    px(ctx, dx - 1, dy - 1, 6, 7, C.outline);
+    px(ctx, dx, dy, 4, 5, C.cupBody);
+    const left = Math.round((1 - progress) * 4);
+    if (left > 0) px(ctx, dx, dy + 5 - left, 4, left, C.cupWater);
+    // Small tip of the wrist on each swallow.
+    if (rise >= 1 && Math.sin(s.time * 13) > 0.3) {
+      px(ctx, dx, dy - 1, 4, 1, C.cupBody);
     }
   } else if (player.carryingWater && !waving) {
     const hx = player.facing === "left" ? x - 9 : x + 6;
@@ -753,7 +770,7 @@ export function createRenderer(
   /** Bar over the character while a held interaction is filling. */
   function drawHoldProgress(state: GameState) {
     const player = state.player;
-    if (player.activityProgress <= 0) return;
+    if (player.activityProgress <= 0 || player.activity === "drink") return;
     const C = theme.palette;
     const x = Math.round(player.pos.x);
     const top = Math.round(player.pos.y) - 20;

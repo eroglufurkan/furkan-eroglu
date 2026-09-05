@@ -34,12 +34,14 @@ export default function RoomStage({
   const [hovered, setHovered] = useState(false);
   const [ballHovered, setBallHovered] = useState(false);
   const [labelHovered, setLabelHovered] = useState(false);
+  const [cardHovered, setCardHovered] = useState(false);
   const [caught, setCaught] = useState<number[]>([]);
   const [carrying, setCarrying] = useState(false);
   const engineRef = useRef<GameEngine | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ballLabelRef = useRef<HTMLDivElement>(null);
   const hideBallLabel = useRef<number | null>(null);
+  const hideCard = useRef<number | null>(null);
 
   const closePanel = useCallback(() => setPanel(null), []);
   const handleAxis = useCallback((x: number, y: number) => {
@@ -59,7 +61,15 @@ export default function RoomStage({
       card.style.left = `${(at.x / ROOM_W) * 100}%`;
       card.style.top = `${((at.y - 25) / ROOM_H) * 100}%`;
     }
-    setHovered((prev) => (prev === isHovered ? prev : isHovered));
+    if (hideCard.current !== null) {
+      window.clearTimeout(hideCard.current);
+      hideCard.current = null;
+    }
+    if (isHovered) {
+      setHovered(true);
+    } else {
+      hideCard.current = window.setTimeout(() => setHovered(false), 260);
+    }
   }, []);
 
   /**
@@ -86,6 +96,7 @@ export default function RoomStage({
   useEffect(
     () => () => {
       if (hideBallLabel.current !== null) window.clearTimeout(hideBallLabel.current);
+      if (hideCard.current !== null) window.clearTimeout(hideCard.current);
     },
     [],
   );
@@ -95,6 +106,9 @@ export default function RoomStage({
   }, []);
 
   const showBallLabel = (ballHovered || labelHovered) && !panel;
+  const showCard = (hovered || cardHovered) && !panel;
+  // Only interactive when there is a button on it to press.
+  const cardInteractive = showCard && carrying;
 
   return (
     <div className="flex w-full flex-col">
@@ -123,17 +137,35 @@ export default function RoomStage({
         {/* Name card, shown only while the pointer is on the character. */}
         <div
           ref={cardRef}
-          aria-hidden={!hovered}
-          className={`title-shadow pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-full text-center whitespace-nowrap transition-opacity duration-150 ${
-            hovered ? "opacity-100" : "opacity-0"
-          }`}
+          aria-hidden={!showCard}
+          onPointerEnter={() => setCardHovered(true)}
+          onPointerLeave={() => setCardHovered(false)}
+          className={`absolute z-20 -translate-x-1/2 -translate-y-full text-center whitespace-nowrap transition-opacity duration-150 ${
+            showCard ? "opacity-100" : "opacity-0"
+          } ${cardInteractive ? "" : "pointer-events-none"}`}
         >
-          <p className="text-[clamp(0.6rem,1.2vw,0.9rem)] font-medium tracking-[0.14em] text-bone">
-            {PROFILE.name}
-          </p>
-          <p className="font-mono text-[clamp(0.4rem,0.75vw,0.55rem)] tracking-[0.2em] text-bone-faint uppercase">
-            {PROFILE.role}
-          </p>
+          <div className="title-shadow pointer-events-none">
+            <p className="text-[clamp(0.6rem,1.2vw,0.9rem)] font-medium tracking-[0.14em] text-bone">
+              {PROFILE.name}
+            </p>
+            <p className="font-mono text-[clamp(0.4rem,0.75vw,0.55rem)] tracking-[0.2em] text-bone-faint uppercase">
+              {PROFILE.role}
+            </p>
+          </div>
+          {carrying && (
+            <button
+              type="button"
+              tabIndex={cardInteractive ? 0 : -1}
+              onClick={() => {
+                engineRef.current?.drink();
+                setCardHovered(false);
+                setHovered(false);
+              }}
+              className="prompt-chip mt-1 rounded-[3px] border border-ash-500/70 px-2 py-1 font-mono text-[10px] tracking-[0.14em] text-bone-dim transition-colors hover:border-bone-dim hover:text-bone"
+            >
+              {t("drink")}
+            </button>
+          )}
         </div>
 
         {/* Send the ball home again. */}

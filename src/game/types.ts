@@ -70,7 +70,7 @@ export type Player = {
   hovered: boolean;
   carryingWater: boolean;
   /** What the hands are busy with, which drives the pose. */
-  activity: "none" | "fill" | "water";
+  activity: "none" | "fill" | "water" | "drink";
   /** 0..1 through a held interaction. */
   activityProgress: number;
 };

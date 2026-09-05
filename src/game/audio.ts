@@ -16,6 +16,7 @@ export type RoomAudio = {
   bump: (strength: number) => void;
   catchBug: () => void;
   pour: () => void;
+  sip: () => void;
   /** Running water for as long as the cup is being filled. Returns a stopper. */
   startStream: () => () => void;
   confirm: () => void;
@@ -76,8 +77,9 @@ export function createAudio(initial: Options): RoomAudio {
     band.Q.value = filter.q;
 
     const gain = at.createGain();
+    const attack = Math.min(0.005, duration * 0.3);
     gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.exponentialRampToValueAtTime(peak, when + 0.006);
+    gain.gain.exponentialRampToValueAtTime(peak, when + attack);
     gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
 
     src.connect(band).connect(gain).connect(master);
@@ -217,8 +219,26 @@ export function createAudio(initial: Options): RoomAudio {
       const at = ensure();
       if (!at) return;
       const t0 = at.currentTime;
-      noiseBurst(at, t0, 0.03, { type: "highpass", frequency: 2600, q: 0.7 }, 0.09);
-      tone(at, t0, on ? 340 : 260, on ? 520 : 180, 0.06, 0.05, "square");
+      // A rocker makes two transients a few milliseconds apart: the spring
+      // snapping over, then the rocker landing against the housing. Flicking
+      // off is the duller of the two.
+      const snap = on ? 3600 : 3000;
+      noiseBurst(at, t0, 0.011, { type: "bandpass", frequency: snap, q: 1.8 }, 0.2);
+      noiseBurst(at, t0 + 0.015, 0.022, { type: "bandpass", frequency: snap * 0.5, q: 1.2 }, 0.12);
+      // Hollow plastic body under the click, short enough to read as a knock.
+      tone(at, t0 + 0.01, on ? 220 : 175, on ? 118 : 92, 0.032, 0.07, "triangle");
+    },
+
+    sip() {
+      const at = ensure();
+      if (!at) return;
+      const t0 = at.currentTime;
+      // Three swallows, each a little lower than the last.
+      for (let i = 0; i < 3; i++) {
+        const when = t0 + i * 0.19;
+        noiseBurst(at, when, 0.07, { type: "lowpass", frequency: 720 - i * 90, q: 0.9 }, 0.05);
+        tone(at, when, 195 - i * 24, 118 - i * 14, 0.09, 0.05, "sine");
+      }
     },
 
     dispose() {
