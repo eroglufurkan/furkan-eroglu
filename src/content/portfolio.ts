@@ -74,12 +74,17 @@ export const PROJECTS: readonly Project[] = [
       "A 4-player cooperative horror prototype built in Unreal Engine with Blueprints. Not a released commercial game — it is a prototype focused on gameplay systems and networked co-op.",
     highlights: [
       "4-player co-op horror",
-      "Gameplay systems",
-      "Multiplayer replication",
-      "Player / item interactions",
-      "Cooperative mechanics",
+      "Server-authoritative pickups: the client asks, the server grants only if the item is still unclaimed, then removes it from the world — two players reaching at the same moment can never both take it",
+      "Held items attach to the character and replicate, so the other three players see what you are carrying",
+      "Gameplay systems and cooperative mechanics, built in Blueprints",
     ],
-    stack: ["Unreal Engine", "Blueprints", "Multiplayer", "Replication"],
+    stack: [
+      "Unreal Engine",
+      "Blueprints",
+      "Multiplayer",
+      "Replication",
+      "Server Authority",
+    ],
     links: [
       { label: "Watch Gameplay Video", href: LINKS.coopHorrorVideo, primary: true },
     ],
