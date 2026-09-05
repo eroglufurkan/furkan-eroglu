@@ -119,6 +119,8 @@ export function createAudio(initial: Options): RoomAudio {
       if (!next.enabled && ctx && ctx.state === "running") ctx.suspend().catch(() => {});
     },
 
+    // Footsteps repeat far more than anything else here, so they sit a few dB
+    // under the one-off sounds to stay in the background.
     step(surface) {
       const at = ensure();
       if (!at) return;
@@ -128,8 +130,8 @@ export function createAudio(initial: Options): RoomAudio {
 
       if (surface === "rug") {
         // Muffled: no click, just a soft low thud.
-        noiseBurst(at, when, 0.1, { type: "lowpass", frequency: 520 * detune, q: 0.9 }, 0.09);
-        tone(at, when, 96 * detune, 62, 0.08, 0.035);
+        noiseBurst(at, when, 0.1, { type: "lowpass", frequency: 520 * detune, q: 0.9 }, 0.065);
+        tone(at, when, 96 * detune, 62, 0.08, 0.026);
       } else {
         // Hard floor. A narrow bandpass up at 1.75kHz rang like a tick and got
         // tiring within a few paces, so this is a broad, low tap instead: the
@@ -137,9 +139,9 @@ export function createAudio(initial: Options): RoomAudio {
         // sliver of grit on top for the hard surface, and a short body knock.
         // Each footfall is jittered so a walk never sounds looped.
         const vary = 0.88 + Math.random() * 0.24;
-        noiseBurst(at, when, 0.042, { type: "lowpass", frequency: 880 * detune * vary, q: 0.6 }, 0.065);
-        noiseBurst(at, when, 0.011, { type: "highpass", frequency: 3400, q: 0.4 }, 0.014);
-        tone(at, when, 124 * detune * vary, 72, 0.032, 0.028, "triangle");
+        noiseBurst(at, when, 0.042, { type: "lowpass", frequency: 880 * detune * vary, q: 0.6 }, 0.048);
+        noiseBurst(at, when, 0.011, { type: "highpass", frequency: 3400, q: 0.4 }, 0.01);
+        tone(at, when, 124 * detune * vary, 72, 0.032, 0.021, "triangle");
       }
     },
 

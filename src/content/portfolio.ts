@@ -113,15 +113,12 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
     items: ["React", "Next.js", "Supabase", "PostgreSQL", "REST APIs"],
   },
   {
-    title: "Tools / AI",
-    items: [
-      "Git",
-      "Vercel",
-      "Replicate",
-      "Hugging Face",
-      "Claude",
-      "ChatGPT Codex",
-    ],
+    title: "Tools",
+    items: ["Git", "Vercel", "Replicate", "Hugging Face"],
+  },
+  {
+    title: "AI Agents",
+    items: ["Claude", "ChatGPT Codex"],
   },
 ];
 

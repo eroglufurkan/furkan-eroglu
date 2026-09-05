@@ -56,6 +56,10 @@ export default function Experience() {
       const next: ThemeId = current === "dark" ? "bright" : "dark";
       if (next === DEFAULT_THEME) delete document.documentElement.dataset.theme;
       else document.documentElement.dataset.theme = next;
+      // Keep the browser chrome in step with the room.
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", next === "dark" ? "#07080a" : "#fdf4e3");
       try {
         window.localStorage.setItem(THEME_STORAGE_KEY, next);
       } catch {
