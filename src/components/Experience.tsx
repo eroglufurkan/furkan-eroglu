@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import KeyHint from "./KeyHint";
 import PortfolioView from "./PortfolioView";
 import RoomStage from "./RoomStage";
@@ -73,6 +73,11 @@ export default function Experience() {
     setSettings(next);
     saveSettings(next);
   }, []);
+
+  // Screen readers should hear the interface in the language it is showing.
+  useEffect(() => {
+    document.documentElement.lang = settings.language;
+  }, [settings.language]);
 
   const t = useMemo(() => translator(settings.language), [settings.language]);
   const playing = mode === "play";

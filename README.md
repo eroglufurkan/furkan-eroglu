@@ -47,23 +47,25 @@ wrong room. There is deliberately no theme button in the page header — the
 switch on the wall is the control. That does mean the plain portfolio view
 inherits whatever the room was last set to.
 
-## Before you deploy — four things to fill in
+## Content
 
-All of them live in [`src/content/portfolio.ts`](src/content/portfolio.ts),
-marked with `TODO`:
+Everything a visitor reads lives in
+[`src/content/portfolio.ts`](src/content/portfolio.ts): profile, projects,
+skills and the links in `LINKS` (email, GitHub, LinkedIn, CV path, gameplay
+video). A link left empty renders as a disabled `· soon` button rather than a
+dead one, so a half-filled entry never ships broken.
 
-| What | Where |
-| --- | --- |
-| GitHub profile URL | `LINKS.github` |
-| LinkedIn profile URL | `LINKS.linkedin` |
-| Co-op horror gameplay video URL | `LINKS.coopHorrorVideo` |
-| Your CV PDF | drop it at `public/cv/furkan-eroglu-cv.pdf` |
+## Deploying
 
-A link left empty renders as a disabled `· soon` button rather than a dead link,
-so nothing breaks if you ship before filling one in.
+The whole site prerenders to static output, so any host works; Vercel needs no
+configuration. Two things worth knowing:
 
-The email in `LINKS.email` is currently `erogllu.furkan@gmail.com` — change it if
-you would rather publish a different address.
+- **Share card.** [`src/app/opengraph-image.tsx`](src/app/opengraph-image.tsx)
+  draws the card at build time with `next/og`. Its absolute URL comes from
+  `metadataBase`, which reads `NEXT_PUBLIC_SITE_URL` and otherwise falls back to
+  Vercel's own production URL. On a custom domain, set `NEXT_PUBLIC_SITE_URL`.
+- **Favicon.** [`src/app/icon.svg`](src/app/icon.svg) is the character from the
+  room, drawn on a 16px grid so it survives at tab size.
 
 ## Language
 
@@ -89,6 +91,9 @@ src/
     audio.ts              synthesised footsteps, bumps and chimes
     settings.ts           volume, language and key bindings + persistence
     i18n.ts               the English and Turkish string tables
+  app/
+    icon.svg              favicon
+    opengraph-image.tsx   the share card, drawn with next/og
   components/
     Experience.tsx        play / portfolio mode switch
     RoomStage.tsx         the room frame and its overlays

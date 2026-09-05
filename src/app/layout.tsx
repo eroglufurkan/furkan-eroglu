@@ -3,14 +3,32 @@ import { PROFILE } from "@/content/portfolio";
 import { THEME_STORAGE_KEY } from "@/game/theme";
 import "./globals.css";
 
+const TITLE = `${PROFILE.name} — ${PROFILE.role}`;
+const DESCRIPTION =
+  "A portfolio you can walk around: a small top-down room with the projects, skills and contact inside. Or read it as a plain page.";
+
+/** Vercel fills this in on deploy; locally it falls back to the dev server. */
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  title: `${PROFILE.name} — ${PROFILE.role}`,
-  description:
-    "A small playable room. Walk around, inspect the desk, the dev station and the workbench, or open the plain portfolio instead.",
+  metadataBase: new URL(siteUrl),
+  title: TITLE,
+  description: DESCRIPTION,
   openGraph: {
-    title: `${PROFILE.name} — ${PROFILE.role}`,
-    description: "A tiny playable portfolio room.",
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: PROFILE.name,
+    url: "/",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
   },
 };
 

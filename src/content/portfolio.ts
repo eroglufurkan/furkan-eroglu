@@ -9,13 +9,10 @@
 
 export const LINKS = {
   email: "erogllu.furkan@gmail.com",
-  // TODO: replace with your real profile URLs
-  github: "https://github.com/",
-  linkedin: "https://www.linkedin.com/",
-  // TODO: drop your CV at public/cv/furkan-eroglu-cv.pdf (or change this path)
+  github: "https://github.com/eroglufurkan",
+  linkedin: "https://www.linkedin.com/in/eroglufurkan/",
   cv: "/cv/furkan-eroglu-cv.pdf",
-  // TODO: replace with your gameplay video link (YouTube / Drive / itch.io)
-  coopHorrorVideo: "",
+  coopHorrorVideo: "https://youtu.be/7HYhxSa-HcM",
 } as const;
 
 export const PROFILE = {
@@ -57,8 +54,9 @@ export const PROJECTS: readonly Project[] = [
     title: "Moriqa",
     subtitle: "Browser-Based AI Image Editor",
     description:
-      "A production SaaS that runs AI image editing entirely in the browser. Users upload an image, run model-backed edits on it and get the result back without installing anything.",
+      "A production SaaS that runs AI image editing entirely in the browser. Users upload an image, run model-backed edits on it and get the result back without installing anything. Over 100 people are using it.",
     highlights: [
+      "Live, with 100+ people using it",
       "Browser-based editing workflow, no desktop software required",
       "AI model integrations wired to the editor",
       "Authentication, storage and data handled with Supabase",
@@ -141,7 +139,7 @@ export const CONTACT: {
       href: `mailto:${LINKS.email}`,
     },
     { label: "LinkedIn", value: "Connect on LinkedIn", href: LINKS.linkedin },
-    { label: "GitHub", value: "See the code", href: LINKS.github },
+    { label: "GitHub", value: "@eroglufurkan", href: LINKS.github },
     { label: "CV", value: "PDF", href: LINKS.cv, download: true },
   ],
 };
