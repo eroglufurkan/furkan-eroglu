@@ -131,8 +131,15 @@ export function createAudio(initial: Options): RoomAudio {
         noiseBurst(at, when, 0.1, { type: "lowpass", frequency: 520 * detune, q: 0.9 }, 0.09);
         tone(at, when, 96 * detune, 62, 0.08, 0.035);
       } else {
-        noiseBurst(at, when, 0.055, { type: "bandpass", frequency: 1750 * detune, q: 1.1 }, 0.07);
-        tone(at, when, 150 * detune, 88, 0.05, 0.045);
+        // Hard floor. A narrow bandpass up at 1.75kHz rang like a tick and got
+        // tiring within a few paces, so this is a broad, low tap instead: the
+        // bulk of the energy under 1kHz with no resonance to ring, a very quiet
+        // sliver of grit on top for the hard surface, and a short body knock.
+        // Each footfall is jittered so a walk never sounds looped.
+        const vary = 0.88 + Math.random() * 0.24;
+        noiseBurst(at, when, 0.042, { type: "lowpass", frequency: 880 * detune * vary, q: 0.6 }, 0.065);
+        noiseBurst(at, when, 0.011, { type: "highpass", frequency: 3400, q: 0.4 }, 0.014);
+        tone(at, when, 124 * detune * vary, 72, 0.032, 0.028, "triangle");
       }
     },
 
