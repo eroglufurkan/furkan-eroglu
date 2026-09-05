@@ -28,12 +28,15 @@ Then open http://localhost:3000
 | Door | Contact |
 | Server rack | Settings: volume, sound effects, language, key bindings |
 | Display case | The bug collection |
-| Water cooler | Fill a cup, then water the plants |
+| Water cooler | Hold interact for three seconds to fill a cup |
 | Light switch | Day / night — this is the theme toggle |
 
 And a few things that are just alive: a ball that takes a kick and bounces off
-the furniture, bugs that wander in now and then and can be caught by walking
-into them, and three plants that perk up once watered.
+the furniture — hover it for a **reset** label, or click it, to send it home —
+bugs that wander in now and then and can be caught by walking into them, and
+three plants that perk up once watered. Filling a cup and emptying it over a pot
+are both three-second holds, with a progress bar over the character and an
+animation to match.
 
 ## Themes
 

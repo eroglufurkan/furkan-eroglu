@@ -114,7 +114,14 @@ export const SKILL_GROUPS: readonly SkillGroup[] = [
   },
   {
     title: "Tools / AI",
-    items: ["Git", "Vercel", "Replicate", "Hugging Face"],
+    items: [
+      "Git",
+      "Vercel",
+      "Replicate",
+      "Hugging Face",
+      "Claude",
+      "ChatGPT Codex",
+    ],
   },
 ];
 

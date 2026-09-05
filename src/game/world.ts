@@ -59,6 +59,7 @@ export const SOLIDS: readonly Rect[] = [
   FURNITURE.workbench,
   FURNITURE.crates,
   FURNITURE.cooler,
+  FURNITURE.bugCase,
   ...PLANT_POTS,
 ];
 
@@ -114,8 +115,9 @@ export const INTERACTABLES: readonly Interactable[] = [
     id: "cooler",
     nameKey: "nameCooler",
     verbKey: "verbTakeWater",
-    promptAt: { x: 213, y: 84 },
+    promptAt: { x: 213, y: 32 },
     reach: REACH,
+    hold: 3,
     action: { type: "takeWater" },
     bounds: FURNITURE.cooler,
     // Nothing to do here while already holding a cup.
@@ -144,8 +146,9 @@ export const INTERACTABLES: readonly Interactable[] = [
     id: "plant" + index,
     nameKey: "namePlant",
     verbKey: "verbWater",
-    promptAt: { x: pot.x + pot.w / 2, y: pot.y - 14 },
+    promptAt: { x: pot.x + pot.w / 2, y: pot.y + pot.h + 18 },
     reach: REACH,
+    hold: 3,
     action: { type: "waterPlant", plant: index },
     bounds: pot,
     enabled: (s) => !s.plants[index].watered,

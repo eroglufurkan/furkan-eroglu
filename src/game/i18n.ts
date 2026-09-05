@@ -71,6 +71,8 @@ const EN = {
 
   /* misc */
   carryingWater: "Carrying water",
+  holdKey: "hold",
+  resetBall: "reset",
 } as const;
 
 export type StringKey = keyof typeof EN;
@@ -136,6 +138,8 @@ const TR: Record<StringKey, string> = {
   collectionEmpty: "Henüz bir şey yakalanmadı.",
 
   carryingWater: "Elinde su var",
+  holdKey: "basılı tut",
+  resetBall: "sıfırla",
 };
 
 const TABLE: Record<LanguageId, Record<StringKey, string>> = { en: EN, tr: TR };

@@ -47,6 +47,7 @@ export default function GameCanvas({
         onCaught: (species, total) => cbs.current.onCaught(species, total),
         onHoverPlayer: (hovered, at) => cbs.current.onHoverPlayer(hovered, at),
         onCarryChange: (carrying) => cbs.current.onCarryChange(carrying),
+        onHoverBall: (hovered, at) => cbs.current.onHoverBall(hovered, at),
         onFirstMove: () => cbs.current.onFirstMove?.(),
       },
     );

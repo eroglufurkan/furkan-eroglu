@@ -11,11 +11,13 @@ const DEADZONE = 0.16;
  */
 export default function TouchControls({
   onAxis,
-  onInteract,
+  onInteractDown,
+  onInteractUp,
   canInteract,
 }: {
   onAxis: (x: number, y: number) => void;
-  onInteract: () => void;
+  onInteractDown: () => void;
+  onInteractUp: () => void;
   canInteract: boolean;
 }) {
   const padRef = useRef<HTMLDivElement>(null);
@@ -73,8 +75,11 @@ export default function TouchControls({
         type="button"
         onPointerDown={(e) => {
           e.preventDefault();
-          onInteract();
+          e.currentTarget.setPointerCapture(e.pointerId);
+          onInteractDown();
         }}
+        onPointerUp={onInteractUp}
+        onPointerCancel={onInteractUp}
         disabled={!canInteract}
         className={`h-24 w-24 touch-none rounded-full border font-mono text-sm tracking-widest transition-colors ${
           canInteract

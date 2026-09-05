@@ -104,19 +104,6 @@ function drawFloor(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   ctx.fillStyle = C.drainSlat;
   for (let i = 0; i < 4; i++) ctx.fillRect(dx - 4, dy - 4 + i * 3, 8, 1);
 
-  // Hazard stripes painted in front of the door.
-  for (let i = 0; i < 9; i++) {
-    const sx = 384 + i * 5;
-    ctx.fillStyle = i % 2 === 0 ? C.hazardA : C.hazardB;
-    ctx.beginPath();
-    ctx.moveTo(sx, 104);
-    ctx.lineTo(sx + 5, 104);
-    ctx.lineTo(sx - 3, 152);
-    ctx.lineTo(sx - 8, 152);
-    ctx.closePath();
-    ctx.fill();
-  }
-
   // Damp patch spreading from the drain.
   ctx.globalAlpha = 0.35;
   ctx.fillStyle = C.damp;
@@ -329,8 +316,6 @@ function drawDoor(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   px(ctx, r.x - 1, r.y + r.h / 2 - 1, r.w + 1, 3, C.doorBraceMid);
   px(ctx, r.x - 3, r.y + r.h / 2 - 4, 3, 7, C.handleBase);
   px(ctx, r.x - 3, r.y + r.h / 2 - 3, 2, 4, C.handle);
-  // Sign plate above the door.
-  px(ctx, r.x - 5, r.y - 13, 13, 8, C.signPlate);
 }
 
 function drawCooler(ctx: CanvasRenderingContext2D, C: RoomPalette) {
@@ -544,8 +529,39 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
     px(ctx, x - 3, top + 2, 6, 1, C.hoodLight);
   }
 
-  // A cup of water, held out to the side away from the coat.
-  if (player.carryingWater && !waving) {
+  // Hands: filling at the tap, tipping the cup over a pot, or just carrying.
+  if (player.activity !== "none") {
+    const progress = player.activityProgress;
+    let hx = x + 6;
+    let hy = top + 8;
+    if (player.facing === "left") hx = x - 10;
+    else if (player.facing === "up") { hx = x + 5; hy = top + 1; }
+    else if (player.facing === "down") { hx = x + 5; hy = top + 13; }
+
+    // Arm reaching out towards the tap or the pot.
+    px(ctx, x + (player.facing === "left" ? -6 : 4), top + 7, 2, 5, C.coatDark);
+    px(ctx, hx - 1, hy - 1, 6, 7, C.outline);
+    px(ctx, hx, hy, 4, 5, C.cupBody);
+
+    if (player.activity === "fill") {
+      // Cup fills up as the hold progresses, water falling in from above.
+      const level = Math.max(1, Math.round(progress * 4));
+      px(ctx, hx, hy + 5 - level, 4, level, C.cupWater);
+      for (let i = 0; i < 3; i++) {
+        const d = (s.time * 44 + i * 4) % 12;
+        px(ctx, hx + 1, hy - 12 + d, 1, 2, C.cupWater);
+      }
+    } else {
+      // Cup empties out, droplets landing on the soil.
+      const level = Math.round((1 - progress) * 4);
+      if (level > 0) px(ctx, hx, hy + 5 - level, 4, level, C.cupWater);
+      px(ctx, hx + 4, hy + 1, 2, 2, C.cupBody);
+      for (let i = 0; i < 3; i++) {
+        const d = (s.time * 40 + i * 5) % 14;
+        px(ctx, hx + 5, hy + 3 + d, 1, 2, C.cupWater);
+      }
+    }
+  } else if (player.carryingWater && !waving) {
     const hx = player.facing === "left" ? x - 9 : x + 6;
     px(ctx, hx, top + 9, 4, 5, C.outline);
     px(ctx, hx, top + 9, 4, 4, C.cupBody);
@@ -734,6 +750,21 @@ export function createRenderer(
     ctx.globalCompositeOperation = "source-over";
   }
 
+  /** Bar over the character while a held interaction is filling. */
+  function drawHoldProgress(state: GameState) {
+    const player = state.player;
+    if (player.activityProgress <= 0) return;
+    const C = theme.palette;
+    const x = Math.round(player.pos.x);
+    const top = Math.round(player.pos.y) - 20;
+    const w = 20;
+    const bx = x - w / 2;
+    const by = top - 12;
+    px(ctx, bx - 1, by - 1, w + 2, 5, C.outline);
+    px(ctx, bx, by, w, 3, C.metalDark);
+    px(ctx, bx, by, Math.round(w * player.activityProgress), 3, C.cupWater);
+  }
+
   function drawHighlights(state: GameState) {
     ctx.strokeStyle = theme.atmosphere.focusStroke;
     ctx.lineWidth = 1;
@@ -793,6 +824,7 @@ export function createRenderer(
       drawLighting(state);
       drawEmissive(ctx, theme, state.time);
       drawCaughtBugs(ctx, theme.palette, state.caught);
+      drawHoldProgress(state);
       drawHighlights(state);
       drawAtmosphere(state);
     },

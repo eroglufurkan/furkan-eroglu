@@ -49,6 +49,8 @@ export type EngineCallbacks = {
   /** Hover state plus where the character is, in 0..1 of the room. */
   onHoverPlayer: (hovered: boolean, at: Vec2) => void;
   onCarryChange: (carrying: boolean) => void;
+  /** Hover state for the ball, so the reset label can follow it. */
+  onHoverBall: (hovered: boolean, at: Vec2) => void;
   onFirstMove?: () => void;
 };
 
@@ -76,6 +78,12 @@ export class GameEngine {
   private hasMoved = false;
   private lastStepPhase = 0;
   private bugTimer = 6;
+  private interactDown = false;
+  private holdTargetId: string | null = null;
+  private holdElapsed = 0;
+  private stopStream: (() => void) | null = null;
+  /** Throttles the contact thud while the player leans on the ball. */
+  private ballTouchCooldown = 0;
   private nextBugId = 1;
   private focusKey = "";
 
@@ -102,8 +110,10 @@ export class GameEngine {
         waveFor: 0,
         hovered: false,
         carryingWater: false,
+        activity: "none",
+        activityProgress: 0,
       },
-      ball: { pos: { ...BALL_SPAWN }, vel: { x: 0, y: 0 }, spin: 0 },
+      ball: { pos: { ...BALL_SPAWN }, vel: { x: 0, y: 0 }, spin: 0, hovered: false },
       bugs: [],
       plants: PLANT_POTS.map((bounds, id) => ({
         id,
@@ -169,11 +179,102 @@ export class GameEngine {
     this.touchAxis.y = y;
   }
 
-  /** The on-screen interact button. */
-  pressInteract() {
+  /**
+   * Interact key or on-screen button. Instant actions fire on the press; a
+   * held action starts filling a progress bar and completes when it is full.
+   */
+  setInteractDown(down: boolean) {
+    if (down === this.interactDown) return;
+    this.interactDown = down;
+    if (!down) {
+      this.cancelHold();
+      return;
+    }
     if (this.state.paused) return;
     const focused = this.state.focused;
-    if (focused) this.runAction(focused);
+    if (!focused || !focused.actionable) return;
+    if (!focused.interactable.hold) {
+      this.runAction(focused);
+      return;
+    }
+    this.beginHold(focused);
+  }
+
+  /** Kept for the touch button, which taps rather than holds. */
+  pressInteract() {
+    this.setInteractDown(true);
+  }
+
+  releaseInteract() {
+    this.setInteractDown(false);
+  }
+
+  /** Sends the ball back to where it started. */
+  resetBall() {
+    const ball = this.state.ball;
+    ball.pos = { ...BALL_SPAWN };
+    ball.vel = { x: 0, y: 0 };
+    ball.spin = 0;
+    if (ball.hovered) {
+      ball.hovered = false;
+      this.canvas.style.cursor = this.state.player.hovered ? "pointer" : "";
+      this.cb.onHoverBall(false, ball.pos);
+    }
+  }
+
+  private beginHold(focused: FocusTarget) {
+    const player = this.state.player;
+    const bounds = focused.interactable.bounds;
+    // Turn towards whatever is being used, so the pose reads.
+    const dx = bounds.x + bounds.w / 2 - player.pos.x;
+    const dy = bounds.y + bounds.h / 2 - player.pos.y;
+    player.facing =
+      Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
+
+    this.holdTargetId = focused.interactable.id;
+    this.holdElapsed = 0;
+    player.activity =
+      focused.interactable.action.type === "takeWater" ? "fill" : "water";
+    player.activityProgress = 0;
+    this.stopStream = this.audio.startStream();
+  }
+
+  private cancelHold() {
+    this.holdTargetId = null;
+    this.holdElapsed = 0;
+    this.state.player.activity = "none";
+    this.state.player.activityProgress = 0;
+    this.stopStream?.();
+    this.stopStream = null;
+  }
+
+  private updateHold(dt: number) {
+    if (!this.holdTargetId) return;
+    const focused = this.state.focused;
+    const player = this.state.player;
+
+    // Letting go, walking off, or the target changing all cancel the hold.
+    if (
+      this.state.paused ||
+      !this.interactDown ||
+      player.moving ||
+      !focused ||
+      !focused.actionable ||
+      focused.interactable.id !== this.holdTargetId
+    ) {
+      this.cancelHold();
+      return;
+    }
+
+    const hold = focused.interactable.hold ?? 0;
+    this.holdElapsed += dt;
+    player.activityProgress = Math.min(1, this.holdElapsed / hold);
+    if (this.holdElapsed >= hold) {
+      const done = focused;
+      this.cancelHold();
+      this.runAction(done);
+      this.audio.confirm();
+    }
   }
 
   private rebuildKeyMap(bindings: KeyBindings) {
@@ -189,19 +290,22 @@ export class GameEngine {
     this.held.clear();
     this.touchAxis.x = 0;
     this.touchAxis.y = 0;
+    this.setInteractDown(false);
   };
 
   private onKeyDown = (e: KeyboardEvent) => {
     const action = this.keyMap.get(e.code);
     if (action || e.code === "Space") e.preventDefault();
     if (this.state.paused || e.repeat || !action) return;
-    if (action === "interact") this.pressInteract();
+    if (action === "interact") this.setInteractDown(true);
     else this.held.add(action);
   };
 
   private onKeyUp = (e: KeyboardEvent) => {
     const action = this.keyMap.get(e.code);
-    if (action) this.held.delete(action);
+    if (!action) return;
+    if (action === "interact") this.setInteractDown(false);
+    else this.held.delete(action);
   };
 
   /** Canvas pixel under the pointer, in room units. */
@@ -220,28 +324,60 @@ export class GameEngine {
     );
   }
 
+  private overBall(at: Vec2): boolean {
+    const b = this.state.ball.pos;
+    // The sprite sits a radius above the ground point it collides on.
+    return Math.hypot(at.x - b.x, at.y - (b.y - BALL_RADIUS + 1)) <= BALL_RADIUS + 4;
+  }
+
   private onPointerMove = (e: PointerEvent) => {
     if (e.pointerType === "touch") return;
-    const hovered = this.overPlayer(this.toRoom(e));
-    if (hovered !== this.state.player.hovered) {
-      this.state.player.hovered = hovered;
-      this.canvas.style.cursor = hovered ? "pointer" : "";
+    const at = this.toRoom(e);
+    const player = this.state.player;
+    const ball = this.state.ball;
+
+    const onPlayer = this.overPlayer(at);
+    // The character wins ties, so the reset label never steals a wave.
+    const onBall = !onPlayer && this.overBall(at);
+
+    if (onPlayer !== player.hovered) {
+      player.hovered = onPlayer;
       this.emitHover();
     }
+    if (onBall !== ball.hovered) {
+      ball.hovered = onBall;
+      this.cb.onHoverBall(onBall, { x: ball.pos.x, y: ball.pos.y });
+    } else if (onBall) {
+      // Keep the label glued to a ball that is still rolling.
+      this.cb.onHoverBall(true, { x: ball.pos.x, y: ball.pos.y });
+    }
+    this.canvas.style.cursor = onPlayer || onBall ? "pointer" : "";
   };
 
   private onPointerLeave = () => {
-    if (!this.state.player.hovered) return;
-    this.state.player.hovered = false;
     this.canvas.style.cursor = "";
-    this.emitHover();
+    if (this.state.player.hovered) {
+      this.state.player.hovered = false;
+      this.emitHover();
+    }
+    if (this.state.ball.hovered) {
+      this.state.ball.hovered = false;
+      this.cb.onHoverBall(false, { ...this.state.ball.pos });
+    }
   };
 
   private onPointerDown = (e: PointerEvent) => {
     if (this.state.paused) return;
-    if (!this.overPlayer(this.toRoom(e))) return;
-    e.preventDefault();
-    this.state.player.waveFor = 1.5;
+    const at = this.toRoom(e);
+    if (this.overPlayer(at)) {
+      e.preventDefault();
+      this.state.player.waveFor = 1.5;
+      return;
+    }
+    if (this.overBall(at)) {
+      e.preventDefault();
+      this.resetBall();
+    }
   };
 
   private emitHover() {
@@ -264,7 +400,6 @@ export class GameEngine {
       case "takeWater":
         if (player.carryingWater) return;
         player.carryingWater = true;
-        this.audio.pour();
         this.cb.onCarryChange(true);
         return;
       case "waterPlant": {
@@ -273,7 +408,6 @@ export class GameEngine {
         plant.watered = true;
         plant.since = 0;
         player.carryingWater = false;
-        this.audio.pour();
         this.cb.onCarryChange(false);
         return;
       }
@@ -341,11 +475,26 @@ export class GameEngine {
     p.moving = moving;
   }
 
+  /** Moves the ball on one axis, reverting if that would put it inside a solid. */
+  private moveBallAxis(delta: number, axis: "x" | "y"): boolean {
+    const ball = this.state.ball;
+    const before = ball.pos[axis];
+    ball.pos[axis] = before + delta;
+    if (isSolidAt(ballBox(ball.pos))) {
+      ball.pos[axis] = before;
+      return true;
+    }
+    return false;
+  }
+
   private updateBall(dt: number) {
     const ball = this.state.ball;
     const p = this.state.player.pos;
+    if (this.ballTouchCooldown > 0) this.ballTouchCooldown -= dt;
 
-    // A moving player nudges the ball away along the contact normal.
+    // A moving player nudges the ball away along the contact normal. The
+    // separation goes through moveBallAxis so a ball pinned against furniture
+    // simply stays put instead of being shoved inside it.
     const dx = ball.pos.x - p.x;
     const dy = ball.pos.y - p.y;
     const dist = Math.hypot(dx, dy);
@@ -356,13 +505,19 @@ export class GameEngine {
       const push = this.state.player.moving ? 150 : 55;
       ball.vel.x = nx * push;
       ball.vel.y = ny * push;
-      ball.pos.x = p.x + nx * contact;
-      ball.pos.y = p.y + ny * contact;
-      if (isSolidAt(ballBox(ball.pos))) {
-        ball.pos.x = p.x + nx * contact;
-        ball.pos.y = p.y + ny * contact;
+
+      const separation = contact - dist;
+      const blockedX = this.moveBallAxis(nx * separation, "x");
+      const blockedY = this.moveBallAxis(ny * separation, "y");
+      // Pinned against something: kill the component pointing into it, so the
+      // ball rolls along the obstacle rather than trying to burrow through.
+      if (blockedX) ball.vel.x = 0;
+      if (blockedY) ball.vel.y = 0;
+
+      if (this.ballTouchCooldown <= 0) {
+        this.audio.bump(0.6);
+        this.ballTouchCooldown = 0.22;
       }
-      this.audio.bump(0.6);
     }
 
     const speed = Math.hypot(ball.vel.x, ball.vel.y);
@@ -378,19 +533,19 @@ export class GameEngine {
     ball.vel.y *= damp;
     ball.spin += (speed / BALL_RADIUS) * dt * 0.5;
 
-    const beforeX = ball.pos.x;
-    ball.pos.x += ball.vel.x * dt;
-    if (isSolidAt(ballBox(ball.pos))) {
-      ball.pos.x = beforeX;
+    if (this.moveBallAxis(ball.vel.x * dt, "x")) {
       ball.vel.x *= -0.55;
-      if (speed > 40) this.audio.bump(Math.min(1, speed / 220));
+      if (speed > 40 && this.ballTouchCooldown <= 0) {
+        this.audio.bump(Math.min(1, speed / 220));
+        this.ballTouchCooldown = 0.12;
+      }
     }
-    const beforeY = ball.pos.y;
-    ball.pos.y += ball.vel.y * dt;
-    if (isSolidAt(ballBox(ball.pos))) {
-      ball.pos.y = beforeY;
+    if (this.moveBallAxis(ball.vel.y * dt, "y")) {
       ball.vel.y *= -0.55;
-      if (speed > 40) this.audio.bump(Math.min(1, speed / 220));
+      if (speed > 40 && this.ballTouchCooldown <= 0) {
+        this.audio.bump(Math.min(1, speed / 220));
+        this.ballTouchCooldown = 0.12;
+      }
     }
   }
 
@@ -522,6 +677,7 @@ export class GameEngine {
 
   private update(dt: number) {
     this.updatePlayer(dt);
+    this.updateHold(dt);
     this.updateBall(dt);
     this.updateBugs(dt);
     for (const plant of this.state.plants) {

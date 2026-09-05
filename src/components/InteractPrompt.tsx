@@ -32,7 +32,21 @@ export default function InteractPrompt({
       style={{ left: `${left}%`, top: `${top}%` }}
     >
       <div className="prompt-chip flex items-center gap-2 rounded-[3px] border border-ash-500/80 px-2.5 py-1.5 backdrop-blur-[1px]">
-        {!touch && target.actionable && <KeyCap>{interactKey}</KeyCap>}
+        {!touch && target.actionable && (
+          <span className="flex items-center gap-1">
+            <KeyCap>{interactKey}</KeyCap>
+            {target.interactable.hold && (
+              <span className="font-mono text-[9px] tracking-[0.12em] text-bone-faint lowercase">
+                {t("holdKey")}
+              </span>
+            )}
+          </span>
+        )}
+        {touch && target.actionable && target.interactable.hold && (
+          <span className="font-mono text-[9px] tracking-[0.12em] text-bone-faint lowercase">
+            {t("holdKey")}
+          </span>
+        )}
         <span
           className={`font-mono text-[11px] tracking-wide ${
             target.actionable ? "text-bone" : "text-bone-dim italic"

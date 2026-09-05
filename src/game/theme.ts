@@ -38,8 +38,6 @@ export type RoomPalette = {
   drainOuter: string;
   drainInner: string;
   drainSlat: string;
-  hazardA: string;
-  hazardB: string;
   damp: string;
   rug: string;
   rugDark: string;
@@ -127,7 +125,6 @@ export type RoomPalette = {
   doorBraceMid: string;
   handleBase: string;
   handle: string;
-  signPlate: string;
 
   /* character */
   coat: string;
@@ -213,8 +210,6 @@ const DARK: RoomTheme = {
     drainOuter: "#1d2028",
     drainInner: "#121619",
     drainSlat: "#2b3138",
-    hazardA: "#6a5a2a",
-    hazardB: "#2c3038",
     damp: "#151a20",
     rug: "#4a2a26",
     rugDark: "#311c1a",
@@ -294,7 +289,6 @@ const DARK: RoomTheme = {
     doorBraceMid: "#55442f",
     handleBase: "#3a414c",
     handle: "#c1cbd8",
-    signPlate: "#1d222b",
 
     coat: "#4d5668",
     coatDark: "#353c49",
@@ -357,7 +351,6 @@ const DARK: RoomTheme = {
     { x: 384, y: 45, w: 2, h: 2, color: "#c8f0a0", blink: 2.4 },
     { x: 89, y: 183, w: 6, h: 2, color: "#ffcf8f" },
     { x: 60, y: 31, w: 8, h: 2, color: "#ffbe74" },
-    { x: 426, y: 88, w: 11, h: 6, color: "#7fc99a" },
     { x: 204, y: 42, w: 2, h: 2, color: "#8fe4ff" },
   ],
   rackLeds: ["#ffcf6a", "#7ce89a"],
@@ -380,8 +373,6 @@ const BRIGHT: RoomTheme = {
     drainOuter: "#b6a382",
     drainInner: "#8a7a5e",
     drainSlat: "#d3c3a2",
-    hazardA: "#ffc94d",
-    hazardB: "#4a3b28",
     damp: "#8fb4c8",
     rug: "#37a89b",
     rugDark: "#23796f",
@@ -461,7 +452,6 @@ const BRIGHT: RoomTheme = {
     doorBraceMid: "#2f8ba8",
     handleBase: "#74889d",
     handle: "#ffe08a",
-    signPlate: "#2f7a52",
 
     coat: "#4185d6",
     coatDark: "#2e63a6",
@@ -525,7 +515,6 @@ const BRIGHT: RoomTheme = {
     { x: 384, y: 45, w: 2, h: 2, color: "#63e87f", blink: 2.4 },
     { x: 89, y: 183, w: 6, h: 2, color: "#fff0b0" },
     { x: 60, y: 31, w: 8, h: 2, color: "#ffe08a" },
-    { x: 426, y: 88, w: 11, h: 6, color: "#3fd489" },
     { x: 204, y: 42, w: 2, h: 2, color: "#2fa8d8" },
   ],
   rackLeds: ["#ff9a3c", "#2fd06f"],

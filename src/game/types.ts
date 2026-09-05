@@ -38,6 +38,8 @@ export type Interactable = {
   action: InteractAction;
   /** Bounds used both for the focus highlight and for the reach test. */
   bounds: Rect;
+  /** Seconds the interact key must be held. Omit for an instant action. */
+  hold?: number;
   /** When false the object is skipped entirely — a fully watered plant, say. */
   enabled?: (state: GameState) => boolean;
   /** Lets an object change its verb with the world state. */
@@ -67,11 +69,17 @@ export type Player = {
   /** True while the pointer is over the character. */
   hovered: boolean;
   carryingWater: boolean;
+  /** What the hands are busy with, which drives the pose. */
+  activity: "none" | "fill" | "water";
+  /** 0..1 through a held interaction. */
+  activityProgress: number;
 };
 
 export type Ball = {
   pos: Vec2;
   vel: Vec2;
+  /** True while the pointer is over it, which offers the reset label. */
+  hovered: boolean;
   /** Rolling angle, purely cosmetic. */
   spin: number;
 };

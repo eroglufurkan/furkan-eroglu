@@ -16,6 +16,9 @@ export type RoomAudio = {
   bump: (strength: number) => void;
   catchBug: () => void;
   pour: () => void;
+  /** Running water for as long as the cup is being filled. Returns a stopper. */
+  startStream: () => () => void;
+  confirm: () => void;
   toggleSwitch: (on: boolean) => void;
   dispose: () => void;
 };
@@ -159,6 +162,55 @@ export function createAudio(initial: Options): RoomAudio {
       const t0 = at.currentTime;
       noiseBurst(at, t0, 0.42, { type: "bandpass", frequency: 1200, q: 0.7 }, 0.06);
       tone(at, t0 + 0.05, 420, 700, 0.34, 0.03, "sine");
+    },
+
+    startStream() {
+      const at = ensure();
+      if (!at || !noise || !master) return () => {};
+      const src = at.createBufferSource();
+      src.buffer = noise;
+      src.loop = true;
+
+      const band = at.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = 1100;
+      band.Q.value = 0.8;
+
+      const gain = at.createGain();
+      const t0 = at.currentTime;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.12);
+
+      // A slow wobble so it reads as pouring rather than as static.
+      const lfo = at.createOscillator();
+      lfo.frequency.value = 5.5;
+      const lfoGain = at.createGain();
+      lfoGain.gain.value = 240;
+      lfo.connect(lfoGain).connect(band.frequency);
+
+      src.connect(band).connect(gain).connect(master);
+      src.start();
+      lfo.start();
+
+      let stopped = false;
+      return () => {
+        if (stopped) return;
+        stopped = true;
+        const now = at.currentTime;
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+        src.stop(now + 0.16);
+        lfo.stop(now + 0.16);
+      };
+    },
+
+    confirm() {
+      const at = ensure();
+      if (!at) return;
+      const t0 = at.currentTime;
+      tone(at, t0, 520, 780, 0.1, 0.05, "sine");
+      tone(at, t0 + 0.09, 780, 1040, 0.14, 0.04, "sine");
     },
 
     toggleSwitch(on) {
