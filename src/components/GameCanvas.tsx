@@ -1,48 +1,55 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GameEngine } from "@/game/engine";
+import { GameEngine, type EngineCallbacks } from "@/game/engine";
+import type { Settings } from "@/game/settings";
 import type { RoomTheme } from "@/game/theme";
-import type { Interactable, PanelId } from "@/game/types";
 import { ROOM_H, ROOM_W } from "@/game/world";
 
-type Props = {
+type Props = EngineCallbacks & {
   theme: RoomTheme;
+  settings: Settings;
   paused: boolean;
-  onFocus: (target: Interactable | null) => void;
-  onInteract: (panel: PanelId) => void;
-  onFirstMove?: () => void;
+  label: string;
   onReady?: (engine: GameEngine) => void;
 };
 
 export default function GameCanvas({
   theme,
+  settings,
   paused,
-  onFocus,
-  onInteract,
-  onFirstMove,
+  label,
   onReady,
+  ...callbacks
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
 
   // Callbacks are read through a ref so the engine is created exactly once.
-  const cbs = useRef({ onFocus, onInteract, onFirstMove, onReady });
-  cbs.current = { onFocus, onInteract, onFirstMove, onReady };
+  const cbs = useRef({ ...callbacks, onReady });
+  cbs.current = { ...callbacks, onReady };
 
-  // The engine is created once; the theme is pushed in as it changes.
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
+  // The engine is created once; theme and settings are pushed in as they change.
+  const initial = useRef({ theme, settings });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = new GameEngine(canvas, themeRef.current, {
-      onFocus: (t) => cbs.current.onFocus(t),
-      onInteract: (p) => cbs.current.onInteract(p),
-      onFirstMove: () => cbs.current.onFirstMove?.(),
-    });
+    const engine = new GameEngine(
+      canvas,
+      initial.current.theme,
+      initial.current.settings,
+      {
+        onFocus: (target) => cbs.current.onFocus(target),
+        onOpenPanel: (panel) => cbs.current.onOpenPanel(panel),
+        onToggleLight: () => cbs.current.onToggleLight(),
+        onCaught: (species, total) => cbs.current.onCaught(species, total),
+        onHoverPlayer: (hovered, at) => cbs.current.onHoverPlayer(hovered, at),
+        onCarryChange: (carrying) => cbs.current.onCarryChange(carrying),
+        onFirstMove: () => cbs.current.onFirstMove?.(),
+      },
+    );
     engineRef.current = engine;
     engine.start();
     if (process.env.NODE_ENV === "development") {
@@ -65,13 +72,17 @@ export default function GameCanvas({
     engineRef.current?.setTheme(theme);
   }, [theme]);
 
+  useEffect(() => {
+    engineRef.current?.setSettings(settings);
+  }, [settings]);
+
   return (
     <canvas
       ref={canvasRef}
       width={ROOM_W}
       height={ROOM_H}
-      aria-label="A dark room containing a desk, a dev station, a workbench and a door"
-      className="pixelated block h-full w-full"
+      aria-label={label}
+      className="pixelated block h-full w-full touch-none"
     />
   );
 }

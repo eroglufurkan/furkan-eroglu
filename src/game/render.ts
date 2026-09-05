@@ -1,6 +1,17 @@
-import type { GameState, Rect } from "./types";
+import type { Bug, GameState, Plant, Rect } from "./types";
 import type { RoomPalette, RoomTheme } from "./theme";
-import { BACK_WALL, FURNITURE, ROOM_H, ROOM_W, RUG, WALL } from "./world";
+import {
+  BACK_WALL,
+  BALL_RADIUS,
+  BUG_SPECIES,
+  FURNITURE,
+  PLANT_POTS,
+  ROOM_H,
+  ROOM_W,
+  RUG,
+  TV,
+  WALL,
+} from "./world";
 
 /* ------------------------------------------------------------------ */
 /* helpers                                                             */
@@ -26,6 +37,22 @@ function px(
 ) {
   ctx.fillStyle = color;
   ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+}
+
+/** A filled circle drawn row by row, so it keeps the chunky pixel look. */
+function pixelDisc(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  color: string,
+) {
+  ctx.fillStyle = color;
+  for (let dy = -r; dy < r; dy++) {
+    const half = Math.floor(Math.sqrt(Math.max(0, r * r - (dy + 0.5) ** 2)));
+    if (half <= 0) continue;
+    ctx.fillRect(Math.round(cx - half), Math.round(cy + dy), half * 2, 1);
+  }
 }
 
 function makeLayer() {
@@ -145,10 +172,10 @@ function drawWalls(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   for (let x = 24; x < ROOM_W; x += 72) px(ctx, x, 7, 3, 7, C.pipeBracket);
 
   // Wall vent.
-  px(ctx, 198, 15, 34, 13, C.ventFrame);
-  px(ctx, 199, 16, 32, 11, C.ventInner);
+  px(ctx, 240, 15, 34, 13, C.ventFrame);
+  px(ctx, 241, 16, 32, 11, C.ventInner);
   ctx.fillStyle = C.ventSlat;
-  for (let i = 0; i < 4; i++) ctx.fillRect(200, 17 + i * 3, 30, 1);
+  for (let i = 0; i < 4; i++) ctx.fillRect(242, 17 + i * 3, 30, 1);
 
   // Skirting.
   px(ctx, 0, BACK_WALL - 4, ROOM_W, 4, C.skirting);
@@ -207,12 +234,13 @@ function drawLaptopDesk(ctx: CanvasRenderingContext2D, C: RoomPalette) {
 function drawMonitorDesk(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   drawDesk(ctx, C, FURNITURE.deskMonitor);
 
-  // Heavy-bezel monitor.
-  px(ctx, 322, 28, 44, 28, C.outline);
-  px(ctx, 323, 29, 42, 26, C.monitorBody);
-  px(ctx, 325, 31, 38, 20, C.monitorGlass);
-  px(ctx, 336, 56, 16, 4, C.monitorNeck);
-  px(ctx, 332, 59, 24, 3, C.metalDark);
+  // Wall-mounted screen, sitting well above the desk.
+  px(ctx, TV.x, TV.y, TV.w, TV.h, C.outline);
+  px(ctx, TV.x + 1, TV.y + 1, TV.w - 2, TV.h - 2, C.monitorBody);
+  px(ctx, TV.x + 3, TV.y + 3, TV.w - 6, TV.h - 8, C.monitorGlass);
+  // Stalk down to the desk.
+  px(ctx, 342, TV.y + TV.h, 4, 6, C.monitorNeck);
+  px(ctx, 336, TV.y + TV.h + 6, 16, 3, C.metalDark);
 
   // Dev kit with a status LED.
   px(ctx, 368, 42, 20, 14, C.outline);
@@ -248,14 +276,12 @@ function drawServerRack(ctx: CanvasRenderingContext2D, C: RoomPalette) {
 
 function drawWorkbench(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   const r = FURNITURE.workbench;
-  px(ctx, r.x - 1, r.y - 1, r.w + 2, r.h + 3, C.outline);
+  px(ctx, r.x - 1, r.y - 1, r.w + 2, r.h + 2, C.outline);
   px(ctx, r.x, r.y, r.w, r.h, C.bench);
   px(ctx, r.x, r.y, r.w, 1, C.benchTopHi);
   ctx.fillStyle = C.benchDark;
   for (let i = 1; i < 4; i++) ctx.fillRect(r.x, r.y + i * 7, r.w, 1);
   px(ctx, r.x, r.y + r.h - 5, r.w, 5, C.benchDark);
-  px(ctx, r.x + 3, r.y + r.h, 3, 3, C.legShadow);
-  px(ctx, r.x + r.w - 6, r.y + r.h, 3, 3, C.legShadow);
 
   // Bench vice.
   px(ctx, r.x + r.w - 24, r.y + 5, 18, 12, C.outline);
@@ -307,16 +333,158 @@ function drawDoor(ctx: CanvasRenderingContext2D, C: RoomPalette) {
   px(ctx, r.x - 5, r.y - 13, 13, 8, C.signPlate);
 }
 
+function drawCooler(ctx: CanvasRenderingContext2D, C: RoomPalette) {
+  const r = FURNITURE.cooler;
+  // Bottle sitting on top, up against the wall.
+  px(ctx, r.x + 4, r.y - 18, 14, 19, C.outline);
+  px(ctx, r.x + 5, r.y - 17, 12, 17, C.coolerTank);
+  px(ctx, r.x + 6, r.y - 12, 10, 11, C.coolerWater);
+  px(ctx, r.x + 8, r.y - 20, 6, 3, C.coolerTap);
+
+  // Cabinet.
+  px(ctx, r.x - 1, r.y - 1, r.w + 2, r.h + 2, C.outline);
+  px(ctx, r.x, r.y, r.w, r.h, C.coolerBody);
+  px(ctx, r.x, r.y, r.w, 1, C.metalLight);
+  // Tap and drip tray.
+  px(ctx, r.x + 8, r.y + 8, 6, 4, C.coolerTap);
+  px(ctx, r.x + 10, r.y + 12, 2, 3, C.coolerTap);
+  px(ctx, r.x + 5, r.y + 18, 12, 4, C.metalDark);
+  px(ctx, r.x + 6, r.y + 19, 10, 2, C.coolerWater);
+}
+
+/** Frame and felt only — the pinned bugs are drawn per frame. */
+function drawBugCaseShell(ctx: CanvasRenderingContext2D, C: RoomPalette) {
+  const r = FURNITURE.bugCase;
+  px(ctx, r.x - 1, r.y - 1, r.w + 2, r.h + 2, C.outline);
+  px(ctx, r.x, r.y, r.w, r.h, C.caseFrame);
+  px(ctx, r.x + 2, r.y + 2, r.w - 4, r.h - 4, C.caseFelt);
+  px(ctx, r.x + 2, r.y + 2, r.w - 4, 1, C.caseGlass);
+}
+
+function drawLightSwitch(
+  ctx: CanvasRenderingContext2D,
+  C: RoomPalette,
+  on: boolean,
+) {
+  const r = FURNITURE.lightSwitch;
+  px(ctx, r.x - 1, r.y - 1, r.w + 2, r.h + 2, C.outline);
+  px(ctx, r.x, r.y, r.w, r.h, C.switchPlate);
+  px(ctx, r.x + 3, r.y + 2, 6, 10, C.metalDark);
+  // Rocker sits high when the lights are on.
+  px(ctx, r.x + 3, on ? r.y + 2 : r.y + 7, 6, 5, on ? C.switchToggle : C.switchToggleOff);
+}
+
+function drawPots(ctx: CanvasRenderingContext2D, C: RoomPalette) {
+  for (const pot of PLANT_POTS) {
+    px(ctx, pot.x - 1, pot.y - 1, pot.w + 2, pot.h + 2, C.outline);
+    px(ctx, pot.x, pot.y, pot.w, pot.h, C.pot);
+    px(ctx, pot.x, pot.y, pot.w, 4, C.potRim);
+    px(ctx, pot.x + 2, pot.y + 2, pot.w - 4, 2, C.soil);
+    px(ctx, pot.x + 2, pot.y + pot.h - 3, pot.w - 4, 2, C.soil);
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* dynamic bits                                                        */
 /* ------------------------------------------------------------------ */
+
+function drawPlant(ctx: CanvasRenderingContext2D, C: RoomPalette, plant: Plant) {
+  const pot = plant.bounds;
+  const cx = pot.x + pot.w / 2;
+  const base = pot.y + 2;
+  // A short pop right after watering, then it settles.
+  const pop = plant.watered ? Math.min(1, plant.since / 0.45) : 0;
+  const grow = plant.watered ? 3 + Math.sin(pop * Math.PI) * 2 : 0;
+  const leaf = plant.watered ? C.leafHealthy : C.leafDry;
+  const hi = plant.watered ? C.leafHi : C.leafDry;
+
+  // Stem.
+  px(ctx, cx - 1, base - 8 - grow, 2, 9 + grow, plant.watered ? C.leafHealthy : C.leafDry);
+
+  // Three fronds; dry ones droop, watered ones reach up.
+  const droop = plant.watered ? 0 : 3;
+  px(ctx, cx - 7, base - 6 - grow + droop, 6, 3, leaf);
+  px(ctx, cx + 1, base - 7 - grow + droop, 6, 3, leaf);
+  px(ctx, cx - 4, base - 11 - grow + droop, 8, 3, hi);
+  px(ctx, cx - 5, base - 6 - grow + droop, 2, 1, C.outline);
+  px(ctx, cx + 4, base - 7 - grow + droop, 2, 1, C.outline);
+
+  if (plant.watered) {
+    px(ctx, cx - 2, base - 15 - grow, 4, 3, C.bloom);
+    px(ctx, cx - 1, base - 16 - grow, 2, 1, C.bloom);
+  }
+}
+
+function drawBall(ctx: CanvasRenderingContext2D, C: RoomPalette, state: GameState) {
+  const { pos } = state.ball;
+  ctx.globalAlpha = C.contactShadowAlpha * 0.8;
+  ctx.fillStyle = C.contactShadow;
+  ctx.beginPath();
+  ctx.ellipse(pos.x, pos.y + 3, BALL_RADIUS, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  const cy = pos.y - BALL_RADIUS + 1;
+  pixelDisc(ctx, pos.x, cy, BALL_RADIUS + 1, C.ballOutline);
+  pixelDisc(ctx, pos.x, cy, BALL_RADIUS, C.ballA);
+
+  // A stripe that rolls with the ball, so motion reads at this size.
+  const band = Math.sin(state.ball.spin) * (BALL_RADIUS - 1);
+  px(ctx, pos.x - BALL_RADIUS + 1, cy + band - 1, BALL_RADIUS * 2 - 2, 2, C.ballB);
+  px(ctx, pos.x - 2, cy - BALL_RADIUS + 1, 2, 1, C.ballB);
+}
+
+function drawBug(ctx: CanvasRenderingContext2D, C: RoomPalette, bug: Bug, t: number) {
+  const color = C.bugColors[bug.species % C.bugColors.length];
+  const x = Math.round(bug.pos.x);
+  const y = Math.round(bug.pos.y);
+  // Legs scurry twice as fast as the body wobbles.
+  const wiggle = Math.sin(t * 18 + bug.id) > 0 ? 1 : 0;
+
+  ctx.globalAlpha = bug.alpha;
+  px(ctx, x - 3, y - 3, 6, 5, C.bugOutline);
+  px(ctx, x - 2, y - 2, 4, 3, color);
+  px(ctx, x - 2, y - 2, 4, 1, C.bugColors[(bug.species + 2) % C.bugColors.length]);
+  // Antennae, pointing the way it is heading.
+  px(ctx, x - 2 + wiggle, y - 4, 1, 1, C.bugOutline);
+  px(ctx, x + 1 - wiggle, y - 4, 1, 1, C.bugOutline);
+  // Legs.
+  px(ctx, x - 4, y - 1 + wiggle, 1, 1, C.bugOutline);
+  px(ctx, x + 3, y - 1 + (1 - wiggle), 1, 1, C.bugOutline);
+  ctx.globalAlpha = 1;
+}
+
+function drawCaughtBugs(
+  ctx: CanvasRenderingContext2D,
+  C: RoomPalette,
+  caught: number[],
+) {
+  const r = FURNITURE.bugCase;
+  for (let i = 0; i < BUG_SPECIES; i++) {
+    const x = r.x + 4 + i * 5;
+    const y = r.y + 10;
+    if (caught.includes(i)) {
+      px(ctx, x, y, 3, 3, C.bugColors[i % C.bugColors.length]);
+      px(ctx, x, y + 3, 3, 1, C.bugOutline);
+    } else {
+      px(ctx, x, y + 1, 3, 1, C.caseGlass);
+    }
+  }
+}
 
 function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState) {
   const { player } = s;
   const x = Math.round(player.pos.x);
   const y = Math.round(player.pos.y);
   const step = player.moving ? Math.floor(player.walkPhase) % 4 : 0;
-  const bob = step === 1 ? -1 : 0;
+  // Walking bobs on the step; standing still breathes on a slow cycle.
+  const bob = player.moving
+    ? step === 1
+      ? -1
+      : 0
+    : Math.sin(player.idlePhase * 1.9) > 0.2
+      ? -1
+      : 0;
 
   ctx.globalAlpha = C.contactShadowAlpha;
   ctx.fillStyle = C.contactShadow;
@@ -337,9 +505,20 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
   px(ctx, x - 6, top + 7, 12, 9, C.coat);
   px(ctx, x - 6, top + 7, 12, 1, C.coatLight);
   px(ctx, x - 6, top + 13, 12, 3, C.coatDark);
-  // Arms hanging at the sides.
+
+  // Arms. The right one goes up and waves when greeted.
+  const waving = player.waveFor > 0;
   px(ctx, x - 6, top + 8, 2, 7, C.coatDark);
-  px(ctx, x + 4, top + 8, 2, 7, C.coatDark);
+  if (waving) {
+    // Arm goes up beside the hood and the hand swings, so it reads at 10px.
+    const flap = Math.sin(player.waveFor * 20) > 0 ? 0 : 2;
+    px(ctx, x + 4, top + 1, 2, 7, C.coatDark);
+    px(ctx, x + 5 + flap, top - 5, 2, 7, C.coatDark);
+    px(ctx, x + 4 + flap, top - 8, 4, 3, C.eye);
+  } else {
+    px(ctx, x + 4, top + 8, 2, 7, C.coatDark);
+  }
+
   // Scarf, the one warm note on the character.
   px(ctx, x - 4, top + 6, 8, 2, C.scarf);
 
@@ -364,6 +543,14 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
     px(ctx, x - 3, top + 2, 6, 4, C.hood);
     px(ctx, x - 3, top + 2, 6, 1, C.hoodLight);
   }
+
+  // A cup of water, held out to the side away from the coat.
+  if (player.carryingWater && !waving) {
+    const hx = player.facing === "left" ? x - 9 : x + 6;
+    px(ctx, hx, top + 9, 4, 5, C.outline);
+    px(ctx, hx, top + 9, 4, 4, C.cupBody);
+    px(ctx, hx, top + 9, 4, 2, C.cupWater);
+  }
 }
 
 function drawEmissive(ctx: CanvasRenderingContext2D, theme: RoomTheme, t: number) {
@@ -385,9 +572,9 @@ function drawEmissive(ctx: CanvasRenderingContext2D, theme: RoomTheme, t: number
   }
   ctx.globalAlpha = 1;
 
-  // Scanline creeping down the monitor.
+  // Scanline creeping down the screen.
   ctx.globalAlpha = 0.14;
-  px(ctx, 326, 32 + ((t * 9) % 18), 36, 1, theme.scanline);
+  px(ctx, 326, 12 + ((t * 9) % 18), 36, 1, theme.scanline);
 
   // Light seeping around the door.
   ctx.globalAlpha = 0.45 + Math.sin(t * 1.3) * 0.06;
@@ -429,6 +616,11 @@ export function createRenderer(
     drawWorkbench(bg.ctx, C);
     drawCrates(bg.ctx, C);
     drawDoor(bg.ctx, C);
+    drawCooler(bg.ctx, C);
+    drawBugCaseShell(bg.ctx, C);
+    drawPots(bg.ctx, C);
+    // The rocker follows the theme, which is what it switches.
+    drawLightSwitch(bg.ctx, C, theme.id === "bright");
   }
   bake();
 
@@ -463,6 +655,27 @@ export function createRenderer(
 
   function lightFlicker(index: number, flicker: number, t: number) {
     return 1 - flicker * (0.5 + 0.5 * Math.sin(t * (5 + index * 2.3) + index * 1.7));
+  }
+
+  /** Ball, bugs, plants and the player, painted back-to-front by baseline. */
+  function drawActors(state: GameState) {
+    const C = theme.palette;
+    type Actor = { y: number; paint: () => void };
+    const actors: Actor[] = [
+      { y: state.ball.pos.y, paint: () => drawBall(ctx, C, state) },
+      { y: state.player.pos.y, paint: () => drawPlayer(ctx, C, state) },
+    ];
+    for (const bug of state.bugs) {
+      actors.push({ y: bug.pos.y, paint: () => drawBug(ctx, C, bug, state.time) });
+    }
+    for (const plant of state.plants) {
+      actors.push({
+        y: plant.bounds.y + plant.bounds.h,
+        paint: () => drawPlant(ctx, C, plant),
+      });
+    }
+    actors.sort((a, b) => a.y - b.y);
+    for (const actor of actors) actor.paint();
   }
 
   function drawLighting(state: GameState) {
@@ -521,18 +734,29 @@ export function createRenderer(
     ctx.globalCompositeOperation = "source-over";
   }
 
-  function drawFocus(state: GameState) {
-    if (!state.focused) return;
-    const b = state.focused.bounds;
-    ctx.globalAlpha = 0.35 + 0.2 * Math.sin(state.time * 4);
+  function drawHighlights(state: GameState) {
     ctx.strokeStyle = theme.atmosphere.focusStroke;
     ctx.lineWidth = 1;
-    ctx.strokeRect(
-      Math.round(b.x) - 2.5,
-      Math.round(b.y) - 2.5,
-      Math.round(b.w) + 5,
-      Math.round(b.h) + 5,
-    );
+
+    if (state.focused) {
+      const b = state.focused.interactable.bounds;
+      ctx.globalAlpha = 0.35 + 0.2 * Math.sin(state.time * 4);
+      ctx.strokeRect(
+        Math.round(b.x) - 2.5,
+        Math.round(b.y) - 2.5,
+        Math.round(b.w) + 5,
+        Math.round(b.h) + 5,
+      );
+    }
+
+    // A ring under the character while the pointer is on them.
+    if (state.player.hovered) {
+      const p = state.player.pos;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.ellipse(Math.round(p.x), Math.round(p.y) + 2, 9, 4, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
   }
 
@@ -565,10 +789,11 @@ export function createRenderer(
   return {
     draw(state) {
       ctx.drawImage(bg.c, 0, 0);
-      drawPlayer(ctx, theme.palette, state);
+      drawActors(state);
       drawLighting(state);
       drawEmissive(ctx, theme, state.time);
-      drawFocus(state);
+      drawCaughtBugs(ctx, theme.palette, state.caught);
+      drawHighlights(state);
       drawAtmosphere(state);
     },
     setTheme(next) {

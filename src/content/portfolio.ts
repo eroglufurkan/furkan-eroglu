@@ -20,7 +20,7 @@ export const LINKS = {
 
 export const PROFILE = {
   name: "Furkan Eroğlu",
-  role: "Game Developer · Software Developer",
+  role: "Game Developer",
   location: "İzmir, Türkiye",
   english: "B2",
   about: [

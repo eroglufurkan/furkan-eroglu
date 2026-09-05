@@ -140,6 +140,33 @@ export type RoomPalette = {
   eye: string;
   contactShadow: string;
   contactShadowAlpha: number;
+
+  /* props */
+  coolerBody: string;
+  coolerTank: string;
+  coolerWater: string;
+  coolerTap: string;
+  caseFrame: string;
+  caseGlass: string;
+  caseFelt: string;
+  switchPlate: string;
+  switchToggle: string;
+  switchToggleOff: string;
+  pot: string;
+  potRim: string;
+  soil: string;
+  leafDry: string;
+  leafHealthy: string;
+  leafHi: string;
+  bloom: string;
+  ballA: string;
+  ballB: string;
+  ballOutline: string;
+  cupBody: string;
+  cupWater: string;
+  bugOutline: string;
+  /** One colour per collectable species. */
+  bugColors: readonly string[];
 };
 
 /** Everything about how the room is lit and graded. */
@@ -279,6 +306,31 @@ const DARK: RoomTheme = {
     eye: "#c9b79a",
     contactShadow: "#000000",
     contactShadowAlpha: 0.45,
+
+    coolerBody: "#5d656f",
+    coolerTank: "#9fd8e8",
+    coolerWater: "#5fb8d8",
+    coolerTap: "#3a414c",
+    caseFrame: "#5b4733",
+    caseGlass: "#8fb0c0",
+    caseFelt: "#2b2f38",
+    switchPlate: "#c9cfd8",
+    switchToggle: "#ffcf6a",
+    switchToggleOff: "#4a515c",
+    pot: "#8a5a3a",
+    potRim: "#a86f48",
+    soil: "#3a2a1c",
+    leafDry: "#6b6a3a",
+    leafHealthy: "#4e9a52",
+    leafHi: "#78c46a",
+    bloom: "#e0698a",
+    ballA: "#d8524a",
+    ballB: "#f0f0e8",
+    ballOutline: "#2a1614",
+    cupBody: "#dfe6ee",
+    cupWater: "#63c4e8",
+    bugOutline: "#12151a",
+    bugColors: ["#e0c24a", "#6fd88a", "#e07a4a", "#7aa8f0", "#c98ae0"],
   },
   atmosphere: {
     shadowColor: "#05070d",
@@ -292,19 +344,21 @@ const DARK: RoomTheme = {
   },
   lights: [
     { pos: { x: 106, y: 62 }, radius: 108, color: [255, 176, 96], intensity: 1, flicker: 0.06 },
-    { pos: { x: 344, y: 58 }, radius: 100, color: [128, 196, 224], intensity: 0.95, flicker: 0.12 },
+    { pos: { x: 344, y: 40 }, radius: 100, color: [128, 196, 224], intensity: 0.95, flicker: 0.12 },
     { pos: { x: 34, y: 130 }, radius: 62, color: [120, 220, 150], intensity: 0.7, flicker: 0.2 },
     { pos: { x: 428, y: 128 }, radius: 78, color: [200, 214, 224], intensity: 0.85, flicker: 0.03 },
     { pos: { x: 96, y: 190 }, radius: 82, color: [255, 168, 104], intensity: 0.8, flicker: 0.05 },
     { pos: { x: 224, y: 156 }, radius: 100, color: [226, 206, 176], intensity: 0.9, flicker: 0.09 },
+    { pos: { x: 213, y: 54 }, radius: 48, color: [130, 210, 235], intensity: 0.5, flicker: 0.02 },
   ],
   emissive: [
     { x: 81, y: 36, w: 26, h: 5, color: "#7fd0e8" },
-    { x: 326, y: 32, w: 36, h: 18, color: "#4d84a6" },
+    { x: 326, y: 12, w: 36, h: 18, color: "#4d84a6" },
     { x: 384, y: 45, w: 2, h: 2, color: "#c8f0a0", blink: 2.4 },
     { x: 89, y: 183, w: 6, h: 2, color: "#ffcf8f" },
     { x: 60, y: 31, w: 8, h: 2, color: "#ffbe74" },
     { x: 426, y: 88, w: 11, h: 6, color: "#7fc99a" },
+    { x: 204, y: 42, w: 2, h: 2, color: "#8fe4ff" },
   ],
   rackLeds: ["#ffcf6a", "#7ce89a"],
   scanline: "#dff2ff",
@@ -419,6 +473,31 @@ const BRIGHT: RoomTheme = {
     eye: "#fff0d4",
     contactShadow: "#5a4326",
     contactShadowAlpha: 0.3,
+
+    coolerBody: "#dcecf7",
+    coolerTank: "#8fd8f0",
+    coolerWater: "#3fb0d8",
+    coolerTap: "#74889d",
+    caseFrame: "#a8703c",
+    caseGlass: "#8a6238",
+    caseFelt: "#e6cfa4",
+    switchPlate: "#fffaf0",
+    switchToggle: "#e08a1f",
+    switchToggleOff: "#a98f63",
+    pot: "#c96f42",
+    potRim: "#e89060",
+    soil: "#6b4a2e",
+    leafDry: "#a8a052",
+    leafHealthy: "#3f9a4a",
+    leafHi: "#6fd06a",
+    bloom: "#e0567f",
+    ballA: "#e0453c",
+    ballB: "#fffaf0",
+    ballOutline: "#59422a",
+    cupBody: "#ffffff",
+    cupWater: "#3fb0d8",
+    bugOutline: "#59422a",
+    bugColors: ["#c9982a", "#2f9c5a", "#d9642a", "#3f7fd0", "#9a4fc0"],
   },
   atmosphere: {
     // Barely any darkness: the pools of light are colour, not visibility.
@@ -433,19 +512,21 @@ const BRIGHT: RoomTheme = {
   },
   lights: [
     { pos: { x: 106, y: 62 }, radius: 116, color: [255, 214, 140], intensity: 1, flicker: 0.03 },
-    { pos: { x: 344, y: 58 }, radius: 106, color: [150, 220, 255], intensity: 0.85, flicker: 0.06 },
+    { pos: { x: 344, y: 40 }, radius: 106, color: [150, 220, 255], intensity: 0.85, flicker: 0.06 },
     { pos: { x: 34, y: 130 }, radius: 66, color: [140, 255, 190], intensity: 0.65, flicker: 0.12 },
     { pos: { x: 428, y: 128 }, radius: 96, color: [170, 236, 255], intensity: 0.95, flicker: 0.02 },
     { pos: { x: 96, y: 190 }, radius: 90, color: [255, 206, 150], intensity: 0.75, flicker: 0.03 },
     { pos: { x: 224, y: 156 }, radius: 124, color: [255, 244, 214], intensity: 0.85, flicker: 0.03 },
+    { pos: { x: 213, y: 54 }, radius: 44, color: [150, 225, 245], intensity: 0.4, flicker: 0.02 },
   ],
   emissive: [
     { x: 81, y: 36, w: 26, h: 5, color: "#3fd0f0" },
-    { x: 326, y: 32, w: 36, h: 18, color: "#2f9fd8" },
+    { x: 326, y: 12, w: 36, h: 18, color: "#2f9fd8" },
     { x: 384, y: 45, w: 2, h: 2, color: "#63e87f", blink: 2.4 },
     { x: 89, y: 183, w: 6, h: 2, color: "#fff0b0" },
     { x: 60, y: 31, w: 8, h: 2, color: "#ffe08a" },
     { x: 426, y: 88, w: 11, h: 6, color: "#3fd489" },
+    { x: 204, y: 42, w: 2, h: 2, color: "#2fa8d8" },
   ],
   rackLeds: ["#ff9a3c", "#2fd06f"],
   scanline: "#ffffff",
@@ -454,7 +535,7 @@ const BRIGHT: RoomTheme = {
 
 export const THEMES: Record<ThemeId, RoomTheme> = { dark: DARK, bright: BRIGHT };
 
-export const DEFAULT_THEME: ThemeId = "dark";
+export const DEFAULT_THEME: ThemeId = "bright";
 
 /** Shared by the no-flash inline script and the React state, so they agree. */
 export const THEME_STORAGE_KEY = "fe-portfolio-theme";
