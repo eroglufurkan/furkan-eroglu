@@ -33,24 +33,24 @@ export type RoomLayout = {
 };
 
 export const LAYOUT: RoomLayout = {
-  spawn: { x: 224, y: 168 },
-  ballSpawn: { x: 296, y: 148 },
-  rug: { x: 176, y: 132, w: 96, h: 62 },
-  tv: { x: 322, y: 8, w: 44, h: 28 },
+  spawn: { x: 218, y: 162 },
+  ballSpawn: { x: 302, y: 113 },
+  rug: { x: 174, y: 110, w: 96, h: 62 },
+  tv: { x: 313, y: 13, w: 44, h: 28 },
   furniture: {
-    deskLaptop: { x: 52, y: 34, w: 84, h: 28 },
-    deskMonitor: { x: 300, y: 34, w: 88, h: 28 },
+    deskLaptop: { x: 58, y: 36, w: 84, h: 28 },
+    deskMonitor: { x: 291, y: 36, w: 88, h: 28 },
     serverRack: { x: 16, y: 92, w: 28, h: 80 },
     workbench: { x: 76, y: 194, w: 116, h: 32 },
     crates: { x: 376, y: 190, w: 44, h: 46 },
-    door: { x: 430, y: 100, w: 18, h: 58 },
-    cooler: { x: 202, y: 36, w: 22, h: 30 },
-    bugCase: { x: 148, y: 36, w: 32, h: 26 },
-    lightSwitch: { x: 410, y: 14, w: 12, h: 14 },
+    door: { x: 430, y: 93, w: 18, h: 58 },
+    cooler: { x: 185, y: 34, w: 22, h: 30 },
+    bugCase: { x: 148, y: 38, w: 32, h: 26 },
+    lightSwitch: { x: 400, y: 14, w: 12, h: 14 },
   },
   plants: [
-    { x: 236, y: 200, w: 18, h: 20 },
-    { x: 20, y: 200, w: 18, h: 20 },
-    { x: 332, y: 196, w: 18, h: 20 },
+    { x: 196, y: 194, w: 18, h: 20 },
+    { x: 54, y: 194, w: 18, h: 20 },
+    { x: 354, y: 190, w: 18, h: 20 },
   ],
 };
