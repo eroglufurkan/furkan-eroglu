@@ -327,8 +327,8 @@ const DARK: RoomTheme = {
     cupBody: "#dfe6ee",
     cupWater: "#63c4e8",
     bugOutline: "#12151a",
-    marker: "#ffcf6a",
-    markerEdge: "#5a3d13",
+    marker: "#ff8c42",
+    markerEdge: "#5c2a0a",
     bugColors: ["#e0c24a", "#6fd88a", "#e07a4a", "#7aa8f0", "#c98ae0"],
   },
   atmosphere: {
@@ -492,8 +492,8 @@ const BRIGHT: RoomTheme = {
     cupBody: "#ffffff",
     cupWater: "#3fb0d8",
     bugOutline: "#59422a",
-    marker: "#c2410c",
-    markerEdge: "#fdf4e3",
+    marker: "#ea580c",
+    markerEdge: "#fff6e6",
     bugColors: ["#c9982a", "#2f9c5a", "#d9642a", "#3f7fd0", "#9a4fc0"],
   },
   atmosphere: {
