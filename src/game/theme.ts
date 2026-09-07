@@ -1,11 +1,12 @@
-import type { Vec2 } from "./types";
-
 export type ThemeId = "dark" | "bright";
 
 export const THEME_IDS: readonly ThemeId[] = ["dark", "bright"];
 
-export type Light = {
-  pos: Vec2;
+/**
+ * How a light behaves. Where it sits is not here: positions live with the
+ * furniture in world.ts, so moving a desk in the editor takes its lamp along.
+ */
+export type LightSpec = {
   radius: number;
   /** [r, g, b] of the additive tint. */
   color: [number, number, number];
@@ -14,16 +15,23 @@ export type Light = {
   flicker: number;
 };
 
-/** One emissive rectangle drawn after the shadow pass, so it always glows. */
-export type Emissive = {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  color: string;
-  /** Seconds per blink cycle. Omit for a steady light. */
-  blink?: number;
-};
+export type LightId =
+  | "deskLamp"
+  | "monitor"
+  | "serverRack"
+  | "door"
+  | "benchLamp"
+  | "ceiling"
+  | "cooler";
+
+/** Faces that glow. Again colour only — the rectangles come from world.ts. */
+export type EmissiveId =
+  | "laptopScreen"
+  | "monitorScreen"
+  | "devkitLed"
+  | "benchLamp"
+  | "deskLamp"
+  | "coolerLed";
 
 /**
  * Every colour the room is drawn with. Both themes fill in the same tokens, so
@@ -192,8 +200,8 @@ export type RoomTheme = {
   label: string;
   palette: RoomPalette;
   atmosphere: RoomAtmosphere;
-  lights: readonly Light[];
-  emissive: readonly Emissive[];
+  lights: Record<LightId, LightSpec>;
+  emissive: Record<EmissiveId, string>;
   /** Server rack blinkenlights, alternating between the two. */
   rackLeds: [string, string];
   scanline: string;
@@ -344,23 +352,23 @@ const DARK: RoomTheme = {
     focusStroke: "#e6d9bd",
     curtain: { color: "#04050a", rim: "255,214,150" },
   },
-  lights: [
-    { pos: { x: 106, y: 62 }, radius: 108, color: [255, 176, 96], intensity: 1, flicker: 0.06 },
-    { pos: { x: 344, y: 40 }, radius: 100, color: [128, 196, 224], intensity: 0.95, flicker: 0.12 },
-    { pos: { x: 34, y: 130 }, radius: 62, color: [120, 220, 150], intensity: 0.7, flicker: 0.2 },
-    { pos: { x: 428, y: 128 }, radius: 78, color: [200, 214, 224], intensity: 0.85, flicker: 0.03 },
-    { pos: { x: 96, y: 190 }, radius: 82, color: [255, 168, 104], intensity: 0.8, flicker: 0.05 },
-    { pos: { x: 224, y: 156 }, radius: 100, color: [226, 206, 176], intensity: 0.9, flicker: 0.09 },
-    { pos: { x: 213, y: 54 }, radius: 48, color: [130, 210, 235], intensity: 0.5, flicker: 0.02 },
-  ],
-  emissive: [
-    { x: 81, y: 36, w: 26, h: 5, color: "#7fd0e8" },
-    { x: 326, y: 12, w: 36, h: 18, color: "#4d84a6" },
-    { x: 384, y: 45, w: 2, h: 2, color: "#c8f0a0", blink: 2.4 },
-    { x: 89, y: 183, w: 6, h: 2, color: "#ffcf8f" },
-    { x: 60, y: 31, w: 8, h: 2, color: "#ffbe74" },
-    { x: 204, y: 42, w: 2, h: 2, color: "#8fe4ff" },
-  ],
+  lights: {
+    deskLamp: { radius: 108, color: [255, 176, 96], intensity: 1, flicker: 0.06 },
+    monitor: { radius: 100, color: [128, 196, 224], intensity: 0.95, flicker: 0.12 },
+    serverRack: { radius: 62, color: [120, 220, 150], intensity: 0.7, flicker: 0.2 },
+    door: { radius: 78, color: [200, 214, 224], intensity: 0.85, flicker: 0.03 },
+    benchLamp: { radius: 82, color: [255, 168, 104], intensity: 0.8, flicker: 0.05 },
+    ceiling: { radius: 100, color: [226, 206, 176], intensity: 0.9, flicker: 0.09 },
+    cooler: { radius: 48, color: [130, 210, 235], intensity: 0.5, flicker: 0.02 },
+  },
+  emissive: {
+    laptopScreen: "#7fd0e8",
+    monitorScreen: "#4d84a6",
+    devkitLed: "#c8f0a0",
+    benchLamp: "#ffcf8f",
+    deskLamp: "#ffbe74",
+    coolerLed: "#8fe4ff",
+  },
   rackLeds: ["#ffcf6a", "#7ce89a"],
   scanline: "#dff2ff",
   doorSeam: "#cfe0ea",
@@ -511,23 +519,23 @@ const BRIGHT: RoomTheme = {
     focusStroke: "#3b2a16",
     curtain: { color: "#1b1206", rim: "255,228,170" },
   },
-  lights: [
-    { pos: { x: 106, y: 62 }, radius: 116, color: [255, 214, 140], intensity: 1, flicker: 0.03 },
-    { pos: { x: 344, y: 40 }, radius: 106, color: [150, 220, 255], intensity: 0.85, flicker: 0.06 },
-    { pos: { x: 34, y: 130 }, radius: 66, color: [140, 255, 190], intensity: 0.65, flicker: 0.12 },
-    { pos: { x: 428, y: 128 }, radius: 96, color: [170, 236, 255], intensity: 0.95, flicker: 0.02 },
-    { pos: { x: 96, y: 190 }, radius: 90, color: [255, 206, 150], intensity: 0.75, flicker: 0.03 },
-    { pos: { x: 224, y: 156 }, radius: 124, color: [255, 244, 214], intensity: 0.85, flicker: 0.03 },
-    { pos: { x: 213, y: 54 }, radius: 44, color: [150, 225, 245], intensity: 0.4, flicker: 0.02 },
-  ],
-  emissive: [
-    { x: 81, y: 36, w: 26, h: 5, color: "#3fd0f0" },
-    { x: 326, y: 12, w: 36, h: 18, color: "#2f9fd8" },
-    { x: 384, y: 45, w: 2, h: 2, color: "#63e87f", blink: 2.4 },
-    { x: 89, y: 183, w: 6, h: 2, color: "#fff0b0" },
-    { x: 60, y: 31, w: 8, h: 2, color: "#ffe08a" },
-    { x: 204, y: 42, w: 2, h: 2, color: "#2fa8d8" },
-  ],
+  lights: {
+    deskLamp: { radius: 116, color: [255, 214, 140], intensity: 1, flicker: 0.03 },
+    monitor: { radius: 106, color: [150, 220, 255], intensity: 0.85, flicker: 0.06 },
+    serverRack: { radius: 66, color: [140, 255, 190], intensity: 0.65, flicker: 0.12 },
+    door: { radius: 96, color: [170, 236, 255], intensity: 0.95, flicker: 0.02 },
+    benchLamp: { radius: 90, color: [255, 206, 150], intensity: 0.75, flicker: 0.03 },
+    ceiling: { radius: 124, color: [255, 244, 214], intensity: 0.85, flicker: 0.03 },
+    cooler: { radius: 44, color: [150, 225, 245], intensity: 0.4, flicker: 0.02 },
+  },
+  emissive: {
+    laptopScreen: "#3fd0f0",
+    monitorScreen: "#2f9fd8",
+    devkitLed: "#63e87f",
+    benchLamp: "#fff0b0",
+    deskLamp: "#ffe08a",
+    coolerLed: "#2fa8d8",
+  },
   rackLeds: ["#ff9a3c", "#2fd06f"],
   scanline: "#ffffff",
   doorSeam: "#ffffff",

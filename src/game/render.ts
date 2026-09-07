@@ -4,8 +4,12 @@ import {
   BACK_WALL,
   BALL_RADIUS,
   BUG_SPECIES,
+  EMISSIVE_IDS,
+  EMISSIVE_RECTS,
   FURNITURE,
   INTERACTABLES,
+  LIGHT_ANCHORS,
+  LIGHT_IDS,
   PLANT_POTS,
   ROOM_H,
   ROOM_W,
@@ -189,62 +193,65 @@ function drawDesk(ctx: CanvasRenderingContext2D, C: RoomPalette, r: Rect) {
 }
 
 function drawLaptopDesk(ctx: CanvasRenderingContext2D, C: RoomPalette) {
-  drawDesk(ctx, C, FURNITURE.deskLaptop);
+  const r = FURNITURE.deskLaptop;
+  drawDesk(ctx, C, r);
 
+  // Everything below is an offset from the desk, so it travels with it.
   // Laptop. The screen itself is drawn in the emissive pass.
-  px(ctx, 79, 41, 30, 13, C.outline);
-  px(ctx, 80, 42, 28, 11, C.laptopBody);
-  px(ctx, 82, 44, 24, 6, C.laptopKeys);
-  px(ctx, 79, 34, 30, 8, C.outline);
-  px(ctx, 80, 35, 28, 7, C.laptopLid);
+  px(ctx, r.x + 27, r.y + 7, 30, 13, C.outline);
+  px(ctx, r.x + 28, r.y + 8, 28, 11, C.laptopBody);
+  px(ctx, r.x + 30, r.y + 10, 24, 6, C.laptopKeys);
+  px(ctx, r.x + 27, r.y, 30, 8, C.outline);
+  px(ctx, r.x + 28, r.y + 1, 28, 7, C.laptopLid);
 
   // Mug and notebook.
-  px(ctx, 118, 45, 7, 7, C.outline);
-  px(ctx, 119, 46, 5, 5, C.mug);
-  px(ctx, 119, 46, 5, 2, C.mugHi);
-  px(ctx, 58, 44, 14, 10, C.outline);
-  px(ctx, 59, 45, 12, 8, C.book);
-  px(ctx, 59, 45, 12, 1, C.bookHi);
-  px(ctx, 61, 56, 9, 1, C.pen);
+  px(ctx, r.x + 66, r.y + 11, 7, 7, C.outline);
+  px(ctx, r.x + 67, r.y + 12, 5, 5, C.mug);
+  px(ctx, r.x + 67, r.y + 12, 5, 2, C.mugHi);
+  px(ctx, r.x + 6, r.y + 10, 14, 10, C.outline);
+  px(ctx, r.x + 7, r.y + 11, 12, 8, C.book);
+  px(ctx, r.x + 7, r.y + 11, 12, 1, C.bookHi);
+  px(ctx, r.x + 9, r.y + 22, 9, 1, C.pen);
 
   // Desk lamp leaning against the wall.
-  px(ctx, 60, 36, 8, 3, C.metalDark);
-  px(ctx, 63, 30, 2, 6, C.metalLight);
-  px(ctx, 58, 26, 12, 5, C.outline);
-  px(ctx, 59, 27, 10, 4, C.lampShade);
+  px(ctx, r.x + 8, r.y + 2, 8, 3, C.metalDark);
+  px(ctx, r.x + 11, r.y - 4, 2, 6, C.metalLight);
+  px(ctx, r.x + 6, r.y - 8, 12, 5, C.outline);
+  px(ctx, r.x + 7, r.y - 7, 10, 4, C.lampShade);
 
   // Chair, offset so it never blocks the interaction spot.
-  px(ctx, 48, 68, 18, 14, C.outline);
-  px(ctx, 49, 69, 16, 12, C.chair);
-  px(ctx, 51, 71, 12, 7, C.chairHi);
+  px(ctx, r.x - 4, r.y + 34, 18, 14, C.outline);
+  px(ctx, r.x - 3, r.y + 35, 16, 12, C.chair);
+  px(ctx, r.x - 1, r.y + 37, 12, 7, C.chairHi);
 }
 
 function drawMonitorDesk(ctx: CanvasRenderingContext2D, C: RoomPalette) {
-  drawDesk(ctx, C, FURNITURE.deskMonitor);
+  const r = FURNITURE.deskMonitor;
+  drawDesk(ctx, C, r);
 
   // Wall-mounted screen, sitting well above the desk.
   px(ctx, TV.x, TV.y, TV.w, TV.h, C.outline);
   px(ctx, TV.x + 1, TV.y + 1, TV.w - 2, TV.h - 2, C.monitorBody);
   px(ctx, TV.x + 3, TV.y + 3, TV.w - 6, TV.h - 8, C.monitorGlass);
-  // Stalk down to the desk.
-  px(ctx, 342, TV.y + TV.h, 4, 6, C.monitorNeck);
-  px(ctx, 336, TV.y + TV.h + 6, 16, 3, C.metalDark);
+  // Stalk down towards the desk, centred under the screen.
+  px(ctx, TV.x + TV.w / 2 - 2, TV.y + TV.h, 4, 6, C.monitorNeck);
+  px(ctx, TV.x + TV.w / 2 - 8, TV.y + TV.h + 6, 16, 3, C.metalDark);
 
   // Dev kit with a status LED.
-  px(ctx, 368, 42, 20, 14, C.outline);
-  px(ctx, 369, 43, 18, 12, C.devkit);
-  px(ctx, 371, 45, 14, 2, C.devkitTrim);
-  px(ctx, 371, 50, 9, 1, C.devkitTrim);
+  px(ctx, r.x + 68, r.y + 8, 20, 14, C.outline);
+  px(ctx, r.x + 69, r.y + 9, 18, 12, C.devkit);
+  px(ctx, r.x + 71, r.y + 11, 14, 2, C.devkitTrim);
+  px(ctx, r.x + 71, r.y + 16, 9, 1, C.devkitTrim);
 
   // Controller on the desk.
-  px(ctx, 302, 46, 15, 9, C.outline);
-  px(ctx, 303, 47, 13, 7, C.padBody);
-  px(ctx, 305, 49, 3, 3, C.padButton);
-  px(ctx, 311, 49, 3, 3, C.padButton);
+  px(ctx, r.x + 2, r.y + 12, 15, 9, C.outline);
+  px(ctx, r.x + 3, r.y + 13, 13, 7, C.padBody);
+  px(ctx, r.x + 5, r.y + 15, 3, 3, C.padButton);
+  px(ctx, r.x + 11, r.y + 15, 3, 3, C.padButton);
 
   ctx.fillStyle = C.cable;
-  ctx.fillRect(344, 62, 1, 6);
-  ctx.fillRect(345, 65, 6, 1);
+  ctx.fillRect(r.x + 44, r.y + 28, 1, 6);
+  ctx.fillRect(r.x + 45, r.y + 31, 6, 1);
 }
 
 function drawServerRack(ctx: CanvasRenderingContext2D, C: RoomPalette) {
@@ -588,32 +595,36 @@ function drawPlayer(ctx: CanvasRenderingContext2D, C: RoomPalette, s: GameState)
 }
 
 function drawEmissive(ctx: CanvasRenderingContext2D, theme: RoomTheme, t: number) {
-  for (const e of theme.emissive) {
+  for (const id of EMISSIVE_IDS) {
+    const e = EMISSIVE_RECTS[id];
     ctx.globalAlpha = e.blink
       ? Math.sin((t / e.blink) * Math.PI * 2) > 0
         ? 1
         : 0.25
       : 1;
-    px(ctx, e.x, e.y, e.w, e.h, e.color);
+    px(ctx, e.x, e.y, e.w, e.h, theme.emissive[id]);
   }
   ctx.globalAlpha = 1;
 
-  // Server rack LEDs.
+  // Server rack LEDs, down the front of the rack.
+  const rack = FURNITURE.serverRack;
   for (let i = 0; i < 7; i++) {
     const on = Math.sin(t * (1.7 + i * 0.6) + i) > -0.2;
     ctx.globalAlpha = on ? 0.95 : 0.2;
-    px(ctx, 36, 97 + i * 10, 2, 2, theme.rackLeds[i % 3 === 0 ? 0 : 1]);
+    px(ctx, rack.x + 20, rack.y + 5 + i * 10, 2, 2, theme.rackLeds[i % 3 === 0 ? 0 : 1]);
   }
   ctx.globalAlpha = 1;
 
   // Scanline creeping down the screen.
+  const screen = EMISSIVE_RECTS.monitorScreen;
   ctx.globalAlpha = 0.14;
-  px(ctx, 326, 12 + ((t * 9) % 18), 36, 1, theme.scanline);
+  px(ctx, screen.x, screen.y + ((t * 9) % screen.h), screen.w, 1, theme.scanline);
 
   // Light seeping around the door.
+  const door = FURNITURE.door;
   ctx.globalAlpha = 0.45 + Math.sin(t * 1.3) * 0.06;
-  px(ctx, 427, 100, 1, 58, theme.doorSeam);
-  px(ctx, 427, 158, 4, 1, theme.doorSeam);
+  px(ctx, door.x - 3, door.y, 1, door.h, theme.doorSeam);
+  px(ctx, door.x - 3, door.y + door.h, 4, 1, theme.doorSeam);
   ctx.globalAlpha = 1;
 }
 
@@ -733,10 +744,11 @@ export function createRenderer(
       sctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
     };
 
-    for (let i = 0; i < theme.lights.length; i++) {
-      const l = theme.lights[i];
+    for (let i = 0; i < LIGHT_IDS.length; i++) {
+      const l = theme.lights[LIGHT_IDS[i]];
+      const at = LIGHT_ANCHORS[LIGHT_IDS[i]];
       const f = lightFlicker(i, l.flicker, t);
-      cut(l.pos.x, l.pos.y, l.radius * f, l.intensity * f);
+      cut(at.x, at.y, l.radius * f, l.intensity * f);
     }
     // The player carries a faint pool of light so they stay readable.
     cut(
@@ -754,16 +766,17 @@ export function createRenderer(
 
     // Additive colour over the lit areas.
     ctx.globalCompositeOperation = "lighter";
-    for (let i = 0; i < theme.lights.length; i++) {
-      const l = theme.lights[i];
+    for (let i = 0; i < LIGHT_IDS.length; i++) {
+      const l = theme.lights[LIGHT_IDS[i]];
+      const at = LIGHT_ANCHORS[LIGHT_IDS[i]];
       const f = lightFlicker(i, l.flicker * 0.5, t);
       const r = l.radius * f;
       const rgb = l.color[0] + "," + l.color[1] + "," + l.color[2];
-      const grad = ctx.createRadialGradient(l.pos.x, l.pos.y, 0, l.pos.x, l.pos.y, r);
+      const grad = ctx.createRadialGradient(at.x, at.y, 0, at.x, at.y, r);
       grad.addColorStop(0, "rgba(" + rgb + "," + A.additive * l.intensity * f + ")");
       grad.addColorStop(1, "rgba(" + rgb + ",0)");
       ctx.fillStyle = grad;
-      ctx.fillRect(l.pos.x - r, l.pos.y - r, r * 2, r * 2);
+      ctx.fillRect(at.x - r, at.y - r, r * 2, r * 2);
     }
     ctx.globalCompositeOperation = "source-over";
   }

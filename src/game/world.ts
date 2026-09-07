@@ -1,4 +1,5 @@
 import { LAYOUT } from "./layout";
+import type { EmissiveId, LightId } from "./theme";
 import type { GameState, Interactable, Rect, Vec2 } from "./types";
 
 /** Logical render resolution. The canvas is upscaled with nearest-neighbour. */
@@ -44,6 +45,91 @@ function union(a: Rect, b: Rect): Rect {
  * Derived rather than hand-written, so moving either one in the editor keeps up.
  */
 const DEV_STATION_BOUNDS: Rect = union(FURNITURE.deskMonitor, TV);
+
+/**
+ * Lamps, screens and LEDs belong to a piece of furniture, so their positions
+ * are offsets from it rather than absolutes. Move a desk in the editor and its
+ * lamp, its glow and everything sitting on it move with it.
+ */
+export const LIGHT_ANCHORS: Record<LightId, Vec2> = {
+  deskLamp: {
+    x: FURNITURE.deskLaptop.x + 54,
+    y: FURNITURE.deskLaptop.y + 28,
+  },
+  monitor: { x: TV.x + TV.w / 2, y: TV.y + TV.h + 4 },
+  serverRack: {
+    x: FURNITURE.serverRack.x + 18,
+    y: FURNITURE.serverRack.y + 38,
+  },
+  door: {
+    x: FURNITURE.door.x - 2,
+    y: FURNITURE.door.y + FURNITURE.door.h / 2 - 1,
+  },
+  benchLamp: { x: FURNITURE.workbench.x + 20, y: FURNITURE.workbench.y - 4 },
+  ceiling: { x: RUG.x + RUG.w / 2, y: RUG.y + 24 },
+  cooler: {
+    x: FURNITURE.cooler.x + FURNITURE.cooler.w / 2,
+    y: FURNITURE.cooler.y + 18,
+  },
+};
+
+/** A glowing face, and how often it blinks if it does. */
+export type EmissiveRect = Rect & { blink?: number };
+
+export const EMISSIVE_RECTS: Record<EmissiveId, EmissiveRect> = {
+  laptopScreen: {
+    x: FURNITURE.deskLaptop.x + 29,
+    y: FURNITURE.deskLaptop.y + 2,
+    w: 26,
+    h: 5,
+  },
+  monitorScreen: { x: TV.x + 4, y: TV.y + 4, w: TV.w - 8, h: TV.h - 10 },
+  devkitLed: {
+    x: FURNITURE.deskMonitor.x + 84,
+    y: FURNITURE.deskMonitor.y + 11,
+    w: 2,
+    h: 2,
+    blink: 2.4,
+  },
+  benchLamp: {
+    x: FURNITURE.workbench.x + 13,
+    y: FURNITURE.workbench.y - 11,
+    w: 6,
+    h: 2,
+  },
+  deskLamp: {
+    x: FURNITURE.deskLaptop.x + 8,
+    y: FURNITURE.deskLaptop.y - 3,
+    w: 8,
+    h: 2,
+  },
+  coolerLed: {
+    x: FURNITURE.cooler.x + 2,
+    y: FURNITURE.cooler.y + 6,
+    w: 2,
+    h: 2,
+  },
+};
+
+/** Fixed order, so each light keeps its own flicker phase between frames. */
+export const LIGHT_IDS: readonly LightId[] = [
+  "deskLamp",
+  "monitor",
+  "serverRack",
+  "door",
+  "benchLamp",
+  "ceiling",
+  "cooler",
+];
+
+export const EMISSIVE_IDS: readonly EmissiveId[] = [
+  "laptopScreen",
+  "monitorScreen",
+  "devkitLed",
+  "benchLamp",
+  "deskLamp",
+  "coolerLed",
+];
 
 /** Everything the player cannot walk through. */
 export const SOLIDS: readonly Rect[] = [
