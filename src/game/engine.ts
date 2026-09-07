@@ -64,6 +64,13 @@ const DRINK_SECONDS = 1.6;
 /** How long the opening circle takes to reach the far corner. */
 const REVEAL_SECONDS = 1.5;
 
+/** Seconds after the room opens before the first bug turns up. */
+const FIRST_BUG_DELAY: [number, number] = [15, 20];
+
+function between([lo, hi]: [number, number]) {
+  return lo + Math.random() * (hi - lo);
+}
+
 function ballBox(pos: Vec2): Rect {
   return {
     x: pos.x - BALL_RADIUS,
@@ -87,7 +94,7 @@ export class GameEngine {
   private running = false;
   private hasMoved = false;
   private lastStepPhase = 0;
-  private bugTimer = 6;
+  private bugTimer = Infinity;
   private interactDown = false;
   private holdTargetId: string | null = null;
   private holdElapsed = 0;
@@ -234,6 +241,8 @@ export class GameEngine {
     if (this.state.reveal.phase !== "curtain") return;
     this.state.reveal.phase = "opening";
     this.state.reveal.t = 0;
+    // Bugs hold off for a while, so the room is quiet to look at first.
+    this.bugTimer = between(FIRST_BUG_DELAY);
     // This runs inside the click or key press, which is what lets audio start.
     this.audio.reveal();
     this.cb.onStarted();
@@ -381,6 +390,8 @@ export class GameEngine {
 
   private onPointerMove = (e: PointerEvent) => {
     if (e.pointerType === "touch") return;
+    // Under the scrim there is nothing to point at yet.
+    if (this.state.reveal.phase !== "open") return;
     const at = this.toRoom(e);
     const player = this.state.player;
     const ball = this.state.ball;
@@ -658,7 +669,7 @@ export class GameEngine {
   private updateBugs(dt: number) {
     const complete = this.state.caught.length >= BUG_SPECIES;
 
-    if (!complete && !this.state.paused) {
+    if (!complete && !this.state.paused && this.state.reveal.phase === "open") {
       this.bugTimer -= dt;
       if (this.bugTimer <= 0 && this.state.bugs.length < 2) {
         this.spawnBug();
