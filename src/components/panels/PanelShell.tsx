@@ -40,7 +40,7 @@ export default function PanelShell({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-rise panel-shadow relative z-10 flex max-h-[88vh] w-full flex-col border border-ash-600 bg-ash-900/97 md:max-h-[86%] md:w-[80%] md:max-w-xl"
+        className="animate-rise panel-shadow relative z-10 flex max-h-[88dvh] w-full flex-col border border-ash-600 bg-ash-900/97 md:max-h-[86%] md:w-[80%] md:max-w-xl"
       >
         {/* Ember hairline along the top edge. */}
         <div className="h-px w-full bg-gradient-to-r from-transparent via-ember-dim to-transparent" />
@@ -72,7 +72,9 @@ export default function PanelShell({
           </button>
         </header>
 
-        <div className="panel-scroll overflow-y-auto px-5 py-5">{children}</div>
+        <div className="panel-scroll overflow-y-auto px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:pb-5">
+          {children}
+        </div>
       </div>
     </div>
   );

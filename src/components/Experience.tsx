@@ -133,36 +133,33 @@ export default function Experience() {
         )}
       </div>
 
-      <footer className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 pb-6 sm:px-6">
-        {playing ? (
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {touch ? (
-              <span className="font-mono text-[10px] tracking-[0.14em] text-bone-faint lowercase">
-                {t("hintMoveTouch")}
-              </span>
-            ) : (
-              <KeyHint
-                keys={[
-                  keyLabel(bind.up[0]),
-                  keyLabel(bind.left[0]),
-                  keyLabel(bind.down[0]),
-                  keyLabel(bind.right[0]),
-                ]}
-                label={t("move")}
-              />
-            )}
-            <KeyHint
-              keys={[touch ? "E" : keyLabel(bind.interact[0])]}
-              label={t("interactVerb")}
-            />
-            <KeyHint keys={["Esc"]} label={t("close")} />
-          </div>
-        ) : (
+      <footer className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6">
+        {/* Touch play says nothing here: there is no Esc key to press, and the
+            stick already has its own hint inside the room. */}
+        {!playing && (
           <p className="font-mono text-[10px] tracking-[0.18em] text-bone-faint uppercase">
             {PROFILE.role}
           </p>
         )}
-        <p className="font-mono text-[10px] tracking-[0.18em] text-bone-faint uppercase">
+        {playing && !touch && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <KeyHint
+              keys={[
+                keyLabel(bind.up[0]),
+                keyLabel(bind.left[0]),
+                keyLabel(bind.down[0]),
+                keyLabel(bind.right[0]),
+              ]}
+              label={t("move")}
+            />
+            <KeyHint
+              keys={[keyLabel(bind.interact[0])]}
+              label={t("interactVerb")}
+            />
+            <KeyHint keys={["Esc"]} label={t("close")} />
+          </div>
+        )}
+        <p className="ml-auto font-mono text-[10px] tracking-[0.18em] text-bone-faint uppercase">
           {PROFILE.location}
         </p>
       </footer>

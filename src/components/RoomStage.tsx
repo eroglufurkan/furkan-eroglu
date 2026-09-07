@@ -14,6 +14,32 @@ import type { RoomTheme } from "@/game/theme";
 import type { PanelId, Vec2 } from "@/game/types";
 import { BALL_RADIUS, GUIDE_TOTAL, ROOM_H, ROOM_W } from "@/game/world";
 
+/**
+ * Places a floating label at a point in the room, then pulls it back inside
+ * the frame. Percentages alone are not enough: the label has a width of its
+ * own, and on a phone the frame is narrow enough that a label near the door
+ * would hang off the edge and be clipped.
+ *
+ * The label is translated left by half its width and up by its full height,
+ * so `left` is its centre and `top` is its bottom edge.
+ */
+function pinInside(el: HTMLElement, x: number, y: number) {
+  const frame = el.offsetParent as HTMLElement | null;
+  if (!frame) return;
+  const fw = frame.clientWidth;
+  const fh = frame.clientHeight;
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  const margin = 4;
+
+  const cx = (x / ROOM_W) * fw;
+  el.style.left = `${Math.min(fw - w / 2 - margin, Math.max(w / 2 + margin, cx))}px`;
+
+  // Flips under the anchor when there is no room above it.
+  const cy = (y / ROOM_H) * fh;
+  el.style.top = `${cy - h < margin ? cy + h + margin : cy}px`;
+}
+
 export default function RoomStage({
   touch,
   theme,
@@ -60,10 +86,7 @@ export default function RoomStage({
   // The card follows the character every frame, so it moves without a re-render.
   const handleHover = useCallback((isHovered: boolean, at: Vec2) => {
     const card = cardRef.current;
-    if (card) {
-      card.style.left = `${(at.x / ROOM_W) * 100}%`;
-      card.style.top = `${((at.y - 25) / ROOM_H) * 100}%`;
-    }
+    if (card) pinInside(card, at.x, at.y - 25);
     if (hideCard.current !== null) {
       window.clearTimeout(hideCard.current);
       hideCard.current = null;
@@ -81,10 +104,7 @@ export default function RoomStage({
    */
   const handleBallHover = useCallback((isHovered: boolean, at: Vec2) => {
     const label = ballLabelRef.current;
-    if (label) {
-      label.style.left = `${(at.x / ROOM_W) * 100}%`;
-      label.style.top = `${((at.y - BALL_RADIUS * 2 - 3) / ROOM_H) * 100}%`;
-    }
+    if (label) pinInside(label, at.x, at.y - BALL_RADIUS * 2 - 3);
     if (hideBallLabel.current !== null) {
       window.clearTimeout(hideBallLabel.current);
       hideBallLabel.current = null;
@@ -237,7 +257,7 @@ export default function RoomStage({
             step === "done" || panel ? "opacity-0" : "opacity-100"
           }`}
         >
-          <p className="font-mono text-[clamp(0.45rem,0.9vw,0.625rem)] tracking-[0.18em] text-bone-dim uppercase">
+          <p className="prompt-chip rounded-[3px] px-2 py-1 text-center font-mono text-[clamp(0.45rem,0.9vw,0.625rem)] tracking-[0.18em] text-bone-dim uppercase">
             {step === "move"
               ? touch
                 ? t("hintMoveTouch")

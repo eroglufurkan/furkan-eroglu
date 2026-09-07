@@ -146,7 +146,7 @@ export default function DevStationScreen({
           </div>
         </div>
 
-        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-[#16283a] px-5 py-2.5 font-mono text-[10px] tracking-[0.18em] text-[#5c86a0] md:px-8">
+        <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-[#16283a] px-5 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] font-mono text-[10px] tracking-[0.18em] text-[#5c86a0] md:px-8">
           <span>ESC · CLOSE</span>
           <span>SIGNAL · {playing ? "LIVE" : "STANDBY"}</span>
         </footer>
