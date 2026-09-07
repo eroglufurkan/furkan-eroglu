@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import GameCanvas from "./GameCanvas";
+import { KeyCap } from "./KeyHint";
 import InteractPrompt from "./InteractPrompt";
 import TouchControls from "./TouchControls";
 import PanelHost from "./panels/PanelHost";
@@ -11,7 +12,7 @@ import type { Translate } from "@/game/i18n";
 import { keyLabel, type Settings } from "@/game/settings";
 import type { RoomTheme } from "@/game/theme";
 import type { PanelId, Vec2 } from "@/game/types";
-import { BALL_RADIUS, ROOM_H, ROOM_W } from "@/game/world";
+import { BALL_RADIUS, GUIDE_TOTAL, ROOM_H, ROOM_W } from "@/game/world";
 
 export default function RoomStage({
   touch,
@@ -37,6 +38,7 @@ export default function RoomStage({
   const [cardHovered, setCardHovered] = useState(false);
   const [caught, setCaught] = useState<number[]>([]);
   const [carrying, setCarrying] = useState(false);
+  const [visited, setVisited] = useState(0);
   const engineRef = useRef<GameEngine | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ballLabelRef = useRef<HTMLDivElement>(null);
@@ -105,6 +107,9 @@ export default function RoomStage({
     setCaught((prev) => (prev.includes(species) ? prev : [...prev, species]));
   }, []);
 
+  // A first-time visitor gets one instruction at a time: walk, then interact.
+  const step: "move" | "interact" | "done" =
+    !moved ? "move" : visited === 0 ? "interact" : "done";
   const showBallLabel = (ballHovered || labelHovered) && !panel;
   const showCard = (hovered || cardHovered) && !panel;
   // Only interactive when there is a button on it to press.
@@ -128,6 +133,7 @@ export default function RoomStage({
           onHoverPlayer={handleHover}
           onHoverBall={handleBallHover}
           onCarryChange={setCarrying}
+          onVisited={setVisited}
           onFirstMove={() => setMoved(true)}
           onReady={(engine) => {
             engineRef.current = engine;
@@ -207,15 +213,37 @@ export default function RoomStage({
           </div>
         )}
 
-        {/* Opening hint, retired once the player works out the controls. */}
+        {/* One instruction at a time, gone once something has been opened. */}
         <div
-          className={`pointer-events-none absolute inset-x-0 bottom-2.5 z-10 text-center transition-opacity duration-700 ${
-            moved ? "opacity-0" : "opacity-100"
+          aria-hidden={step === "done" || panel !== null}
+          className={`pointer-events-none absolute inset-x-0 bottom-2.5 z-10 flex items-center justify-center gap-1.5 px-3 transition-opacity duration-500 ${
+            step === "done" || panel ? "opacity-0" : "opacity-100"
           }`}
         >
-          <p className="font-mono text-[clamp(0.45rem,0.9vw,0.625rem)] tracking-[0.2em] text-bone-faint uppercase">
-            {touch ? t("hintMoveTouch") : t("hintMove")}
+          <p className="font-mono text-[clamp(0.45rem,0.9vw,0.625rem)] tracking-[0.18em] text-bone-dim uppercase">
+            {step === "move"
+              ? touch
+                ? t("hintMoveTouch")
+                : t("hintMove")
+              : touch
+                ? t("hintInteractTouch")
+                : t("hintInteract")}
           </p>
+          {step === "interact" && !touch && (
+            <KeyCap>{keyLabel(settings.bindings.interact[0])}</KeyCap>
+          )}
+        </div>
+
+        {/* How much of the portfolio is left to find. */}
+        <div
+          aria-hidden={!(visited > 0 && visited < GUIDE_TOTAL && !panel)}
+          className={`pointer-events-none absolute top-2 right-2 z-20 transition-opacity duration-500 ${
+            visited > 0 && visited < GUIDE_TOTAL && !panel ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <span className="prompt-chip rounded-[3px] border border-ash-500/70 px-2 py-1 font-mono text-[10px] tracking-[0.14em] text-bone-dim">
+            {visited} / {GUIDE_TOTAL} {t("explored")}
+          </span>
         </div>
 
         <PanelHost

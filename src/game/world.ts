@@ -72,6 +72,7 @@ export const INTERACTABLES: readonly Interactable[] = [
     verbKey: "verbInspect",
     promptAt: { x: 94, y: 30 },
     reach: REACH,
+    guide: true,
     action: { type: "panel", panel: "moriqa" },
     bounds: FURNITURE.deskLaptop,
   },
@@ -81,6 +82,7 @@ export const INTERACTABLES: readonly Interactable[] = [
     verbKey: "verbInspect",
     promptAt: { x: 344, y: 74 },
     reach: REACH,
+    guide: true,
     action: { type: "panel", panel: "coop-horror" },
     bounds: DEV_STATION_BOUNDS,
   },
@@ -90,6 +92,7 @@ export const INTERACTABLES: readonly Interactable[] = [
     verbKey: "verbInspect",
     promptAt: { x: 134, y: 186 },
     reach: REACH,
+    guide: true,
     action: { type: "panel", panel: "skills" },
     bounds: FURNITURE.workbench,
   },
@@ -99,6 +102,7 @@ export const INTERACTABLES: readonly Interactable[] = [
     verbKey: "verbOpen",
     promptAt: { x: 408, y: 94 },
     reach: REACH,
+    guide: true,
     action: { type: "panel", panel: "contact" },
     bounds: FURNITURE.door,
   },
@@ -224,3 +228,6 @@ export function randomFreeSpot(
   }
   return null;
 }
+
+/** How many guided objects a visitor is being pointed at. */
+export const GUIDE_TOTAL = INTERACTABLES.filter((i) => i.guide).length;

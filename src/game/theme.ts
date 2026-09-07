@@ -162,6 +162,9 @@ export type RoomPalette = {
   cupBody: string;
   cupWater: string;
   bugOutline: string;
+  /** The bobbing chevron that points at an unopened portfolio piece. */
+  marker: string;
+  markerEdge: string;
   /** One colour per collectable species. */
   bugColors: readonly string[];
 };
@@ -324,6 +327,8 @@ const DARK: RoomTheme = {
     cupBody: "#dfe6ee",
     cupWater: "#63c4e8",
     bugOutline: "#12151a",
+    marker: "#ffcf6a",
+    markerEdge: "#5a3d13",
     bugColors: ["#e0c24a", "#6fd88a", "#e07a4a", "#7aa8f0", "#c98ae0"],
   },
   atmosphere: {
@@ -487,6 +492,8 @@ const BRIGHT: RoomTheme = {
     cupBody: "#ffffff",
     cupWater: "#3fb0d8",
     bugOutline: "#59422a",
+    marker: "#c2410c",
+    markerEdge: "#fdf4e3",
     bugColors: ["#c9982a", "#2f9c5a", "#d9642a", "#3f7fd0", "#9a4fc0"],
   },
   atmosphere: {

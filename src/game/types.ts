@@ -38,6 +38,11 @@ export type Interactable = {
   action: InteractAction;
   /** Bounds used both for the focus highlight and for the reach test. */
   bounds: Rect;
+  /**
+   * Marks an object as one of the portfolio pieces a first-time visitor is
+   * pointed at. Flavour props (plants, the cooler) are deliberately left out.
+   */
+  guide?: boolean;
   /** Seconds the interact key must be held. Omit for an instant action. */
   hold?: number;
   /** When false the object is skipped entirely — a fully watered plant, say. */
@@ -116,6 +121,8 @@ export type GameState = {
   plants: Plant[];
   /** Species indices already in the display case. */
   caught: number[];
+  /** Ids of the guided objects already opened, so their markers can retire. */
+  visited: string[];
   time: number;
   focused: FocusTarget | null;
   /** True while a panel is open — the world keeps rendering but input is frozen. */

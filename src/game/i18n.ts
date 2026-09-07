@@ -13,8 +13,11 @@ const EN = {
   interactVerb: "interact",
   close: "close",
   stick: "Stick",
-  hintMove: "Use the movement keys to walk",
-  hintMoveTouch: "Drag the stick to move",
+  hintMove: "This room is the portfolio — use the movement keys to walk",
+  hintMoveTouch: "This room is the portfolio — drag the stick to move",
+  hintInteract: "Step up to a marked object and press",
+  hintInteractTouch: "Stand by a marked object and tap E",
+  explored: "explored",
 
   /* interaction verbs */
   verbInspect: "Inspect",
@@ -86,8 +89,11 @@ const TR: Record<StringKey, string> = {
   interactVerb: "etkileşim",
   close: "kapat",
   stick: "Kumanda",
-  hintMove: "Yürümek için hareket tuşlarını kullan",
-  hintMoveTouch: "Yürümek için çubuğu sürükle",
+  hintMove: "Bu oda portfolyonun kendisi — yürümek için hareket tuşlarını kullan",
+  hintMoveTouch: "Bu oda portfolyonun kendisi — yürümek için çubuğu sürükle",
+  hintInteract: "İşaretli bir nesneye yaklaş ve bas:",
+  hintInteractTouch: "İşaretli nesnenin yanında E tuşuna bas",
+  explored: "gezildi",
 
   verbInspect: "İncele",
   verbOpen: "Aç",

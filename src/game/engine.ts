@@ -49,6 +49,8 @@ export type EngineCallbacks = {
   /** Hover state plus where the character is, in 0..1 of the room. */
   onHoverPlayer: (hovered: boolean, at: Vec2) => void;
   onCarryChange: (carrying: boolean) => void;
+  /** How many of the guided portfolio pieces have been opened so far. */
+  onVisited: (count: number) => void;
   /** Hover state for the ball, so the reset label can follow it. */
   onHoverBall: (hovered: boolean, at: Vec2) => void;
   onFirstMove?: () => void;
@@ -125,6 +127,7 @@ export class GameEngine {
         since: 0,
       })),
       caught: [],
+      visited: [],
       time: 0,
       focused: null,
       paused: false,
@@ -406,9 +409,16 @@ export class GameEngine {
     const player = this.state.player;
 
     switch (action.type) {
-      case "panel":
+      case "panel": {
+        const { id, guide } = target.interactable;
+        // Opening a guided piece retires its marker for good.
+        if (guide && !this.state.visited.includes(id)) {
+          this.state.visited.push(id);
+          this.cb.onVisited(this.state.visited.length);
+        }
         this.cb.onOpenPanel(action.panel);
         return;
+      }
       case "toggleLight":
         this.audio.toggleSwitch(!this.state.lightsOn);
         this.cb.onToggleLight();

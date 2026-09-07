@@ -5,6 +5,7 @@ import {
   BALL_RADIUS,
   BUG_SPECIES,
   FURNITURE,
+  INTERACTABLES,
   PLANT_POTS,
   ROOM_H,
   ROOM_W,
@@ -767,6 +768,36 @@ export function createRenderer(
     ctx.globalCompositeOperation = "source-over";
   }
 
+  /**
+   * A bobbing chevron over every portfolio piece the visitor has not opened
+   * yet. This is what tells someone arriving for the first time that the room
+   * has things in it — the markers retire one by one as they are found.
+   */
+  function drawGuideMarkers(state: GameState) {
+    const C = theme.palette;
+    for (const item of INTERACTABLES) {
+      if (!item.guide) continue;
+      if (state.visited.includes(item.id)) continue;
+      // The prompt already says everything once you are standing there.
+      if (state.focused?.interactable.id === item.id) continue;
+
+      const b = item.bounds;
+      const cx = Math.round(b.x + b.w / 2);
+      // Point down at the object from above, unless it is flush with the wall.
+      const above = b.y - 11 >= 8;
+      const base = above ? b.y - 11 : b.y + b.h + 5;
+      const y = base + Math.round(Math.sin(state.time * 2.6 + cx * 0.1) * 1.5);
+
+      for (const pass of [C.markerEdge, C.marker]) {
+        const pad = pass === C.markerEdge ? 1 : 0;
+        for (let i = 0; i < 4; i++) {
+          const w = above ? 7 - 2 * i : 1 + 2 * i;
+          px(ctx, cx - ((w / 2) | 0) - pad, y + i, w + pad * 2, 1, pass);
+        }
+      }
+    }
+  }
+
   /** Bar over the character while a held interaction is filling. */
   function drawHoldProgress(state: GameState) {
     const player = state.player;
@@ -841,6 +872,7 @@ export function createRenderer(
       drawLighting(state);
       drawEmissive(ctx, theme, state.time);
       drawCaughtBugs(ctx, theme.palette, state.caught);
+      drawGuideMarkers(state);
       drawHoldProgress(state);
       drawHighlights(state);
       drawAtmosphere(state);
