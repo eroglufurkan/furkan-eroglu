@@ -117,6 +117,22 @@ src/
 Objects are reachable from every side: the prompt measures distance to the
 object's whole rectangle, not to one hand-placed spot.
 
+## Moving things around
+
+Everything sits where [`src/game/layout.ts`](src/game/layout.ts) says it does:
+spawn points, the rug, the wall screen, the furniture and the plant pots.
+Everything else — solids, interaction boxes, prompt anchors, the dev station
+highlight — is derived from those numbers in `world.ts`, so a piece only ever
+has one position.
+
+Run `npm run dev` and open **/editor** to drag them. Select a box and nudge it
+with the arrow keys, hold Shift for eight at a time, or type a width and height.
+**Save to layout.ts** rewrites the file and the room hot-reloads.
+
+The editor is development only. A production build answers 404 for both
+`/editor` and the `/api/layout` route that writes the file, so a deployed site
+has no way to rewrite its own source.
+
 ## Adding a theme
 
 Add a `RoomTheme` to `src/game/theme.ts` — TypeScript will list any colour token

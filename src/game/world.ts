@@ -1,3 +1,4 @@
+import { LAYOUT } from "./layout";
 import type { GameState, Interactable, Rect, Vec2 } from "./types";
 
 /** Logical render resolution. The canvas is upscaled with nearest-neighbour. */
@@ -8,44 +9,41 @@ export const WALL = 16;
 /** The back wall is taller so it reads as a wall, not a border. */
 export const BACK_WALL = 32;
 
-export const SPAWN: Vec2 = { x: 224, y: 168 };
-
-/** Rug marking the central area the player starts on. Not solid. */
-export const RUG: Rect = { x: 176, y: 132, w: 96, h: 62 };
-
 export const PLAYER_HALF_W = 5;
 export const PLAYER_HALF_H = 4;
 export const PLAYER_SPEED = 86;
 
 /** How many species the display case has slots for. */
 export const BUG_SPECIES = 5;
-
-export const BALL_SPAWN: Vec2 = { x: 296, y: 148 };
 export const BALL_RADIUS = 5;
 
-export const FURNITURE = {
-  deskLaptop: { x: 52, y: 34, w: 84, h: 28 } as Rect,
-  deskMonitor: { x: 300, y: 34, w: 88, h: 28 } as Rect,
-  serverRack: { x: 16, y: 92, w: 28, h: 80 } as Rect,
-  workbench: { x: 76, y: 194, w: 116, h: 32 } as Rect,
-  crates: { x: 376, y: 190, w: 44, h: 46 } as Rect,
-  door: { x: 430, y: 100, w: 18, h: 58 } as Rect,
-  cooler: { x: 202, y: 36, w: 22, h: 30 } as Rect,
-  bugCase: { x: 148, y: 36, w: 32, h: 26 } as Rect,
-  /** Mounted on the back wall, so it is inside the wall's own solid. */
-  lightSwitch: { x: 410, y: 14, w: 12, h: 14 } as Rect,
-};
+/* Positions all come from layout.ts, which the /editor page rewrites. */
+export const SPAWN: Vec2 = LAYOUT.spawn;
+export const BALL_SPAWN: Vec2 = LAYOUT.ballSpawn;
+/** Rug marking the central area the player starts on. Not solid. */
+export const RUG: Rect = LAYOUT.rug;
+/** The wall-mounted screen, sitting above the dev station desk. */
+export const TV: Rect = LAYOUT.tv;
+export const FURNITURE = LAYOUT.furniture;
+export const PLANT_POTS: readonly Rect[] = LAYOUT.plants;
 
-/** The wall-mounted screen, moved up off the desk. */
-export const TV: Rect = { x: 322, y: 8, w: 44, h: 28 };
-/** Highlight box for the dev station: the screen and the desk together. */
-const DEV_STATION_BOUNDS: Rect = { x: 300, y: 8, w: 88, h: 54 };
+/** The smallest box containing both rectangles. */
+function union(a: Rect, b: Rect): Rect {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return {
+    x,
+    y,
+    w: Math.max(a.x + a.w, b.x + b.w) - x,
+    h: Math.max(a.y + a.h, b.y + b.h) - y,
+  };
+}
 
-export const PLANT_POTS: readonly Rect[] = [
-  { x: 236, y: 200, w: 18, h: 20 },
-  { x: 20, y: 200, w: 18, h: 20 },
-  { x: 332, y: 196, w: 18, h: 20 },
-];
+/**
+ * The dev station is two pieces, so its highlight and its reach cover both.
+ * Derived rather than hand-written, so moving either one in the editor keeps up.
+ */
+const DEV_STATION_BOUNDS: Rect = union(FURNITURE.deskMonitor, TV);
 
 /** Everything the player cannot walk through. */
 export const SOLIDS: readonly Rect[] = [
