@@ -865,6 +865,64 @@ export function createRenderer(
     ctx.globalAlpha = 1;
   }
 
+  /**
+   * The opening. Everything is under a scrim except one lit circle, which
+   * expands out past the corners once the visitor starts the room.
+   */
+  const curtain = makeLayer();
+  function drawCurtain(state: GameState) {
+    const r = state.reveal;
+    if (r.phase === "open") return;
+
+    const A = theme.atmosphere;
+    const { x: cx, y: cy } = r.center;
+    const far = Math.max(
+      Math.hypot(cx, cy),
+      Math.hypot(ROOM_W - cx, cy),
+      Math.hypot(cx, ROOM_H - cy),
+      Math.hypot(ROOM_W - cx, ROOM_H - cy),
+    ) + 10;
+    const base = 46;
+    // Ease out, so it leaps open and then settles.
+    const eased = 1 - Math.pow(1 - r.t, 3);
+    const radius =
+      r.phase === "curtain"
+        ? base + Math.sin(state.time * 1.7) * 2
+        : base + (far - base) * eased;
+
+    const cctx = curtain.ctx;
+    cctx.globalCompositeOperation = "source-over";
+    cctx.fillStyle = A.curtain.color;
+    cctx.fillRect(0, 0, ROOM_W, ROOM_H);
+
+    cctx.globalCompositeOperation = "destination-out";
+    const hole = cctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    hole.addColorStop(0, "rgba(0,0,0,1)");
+    hole.addColorStop(0.88, "rgba(0,0,0,1)");
+    hole.addColorStop(1, "rgba(0,0,0,0)");
+    cctx.fillStyle = hole;
+    cctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+    cctx.globalCompositeOperation = "source-over";
+
+    // The scrim fades out over the last of the expansion.
+    ctx.globalAlpha = r.phase === "opening" ? Math.min(1, (1 - r.t) * 2.4) : 1;
+    ctx.drawImage(curtain.c, 0, 0);
+    ctx.globalAlpha = 1;
+
+    // A glow riding the edge of the circle.
+    ctx.globalCompositeOperation = "lighter";
+    const rim = ctx.createRadialGradient(
+      cx, cy, Math.max(0, radius - 12), cx, cy, radius + 5,
+    );
+    const fade = r.phase === "opening" ? Math.min(1, (1 - r.t) * 2.4) : 1;
+    rim.addColorStop(0, "rgba(" + A.curtain.rim + ",0)");
+    rim.addColorStop(0.78, "rgba(" + A.curtain.rim + "," + 0.34 * fade + ")");
+    rim.addColorStop(1, "rgba(" + A.curtain.rim + ",0)");
+    ctx.fillStyle = rim;
+    ctx.fillRect(cx - radius - 8, cy - radius - 8, (radius + 8) * 2, (radius + 8) * 2);
+    ctx.globalCompositeOperation = "source-over";
+  }
+
   return {
     draw(state) {
       ctx.drawImage(bg.c, 0, 0);
@@ -876,6 +934,7 @@ export function createRenderer(
       drawHoldProgress(state);
       drawHighlights(state);
       drawAtmosphere(state);
+      drawCurtain(state);
     },
     setTheme(next) {
       theme = next;

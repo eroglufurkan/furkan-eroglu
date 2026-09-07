@@ -18,6 +18,8 @@ const EN = {
   hintInteract: "Step up to a marked object and press",
   hintInteractTouch: "Stand by a marked object and tap E",
   explored: "explored",
+  startPrompt: "Click to start",
+  startHint: "or press any key",
 
   /* interaction verbs */
   verbInspect: "Inspect",
@@ -94,6 +96,8 @@ const TR: Record<StringKey, string> = {
   hintInteract: "İşaretli bir nesneye yaklaş ve bas:",
   hintInteractTouch: "İşaretli nesnenin yanında E tuşuna bas",
   explored: "gezildi",
+  startPrompt: "Başlamak için tıkla",
+  startHint: "ya da bir tuşa bas",
 
   verbInspect: "İncele",
   verbOpen: "Aç",

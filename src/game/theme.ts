@@ -182,6 +182,8 @@ export type RoomAtmosphere = {
   grainAlpha: number;
   motes: { color: string; alpha: number };
   focusStroke: string;
+  /** The opening scrim, and the "r,g,b" of the glow riding its edge. */
+  curtain: { color: string; rim: string };
 };
 
 export type RoomTheme = {
@@ -340,6 +342,7 @@ const DARK: RoomTheme = {
     grainAlpha: 0.04,
     motes: { color: "#cfd6e0", alpha: 0.09 },
     focusStroke: "#e6d9bd",
+    curtain: { color: "#04050a", rim: "255,214,150" },
   },
   lights: [
     { pos: { x: 106, y: 62 }, radius: 108, color: [255, 176, 96], intensity: 1, flicker: 0.06 },
@@ -506,6 +509,7 @@ const BRIGHT: RoomTheme = {
     grainAlpha: 0.02,
     motes: { color: "#fff6dc", alpha: 0.24 },
     focusStroke: "#3b2a16",
+    curtain: { color: "#1b1206", rim: "255,228,170" },
   },
   lights: [
     { pos: { x: 106, y: 62 }, radius: 116, color: [255, 214, 140], intensity: 1, flicker: 0.03 },

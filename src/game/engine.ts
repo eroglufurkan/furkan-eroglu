@@ -51,6 +51,8 @@ export type EngineCallbacks = {
   onCarryChange: (carrying: boolean) => void;
   /** How many of the guided portfolio pieces have been opened so far. */
   onVisited: (count: number) => void;
+  /** Fired once, when the visitor opens the room. */
+  onStarted: () => void;
   /** Hover state for the ball, so the reset label can follow it. */
   onHoverBall: (hovered: boolean, at: Vec2) => void;
   onFirstMove?: () => void;
@@ -58,6 +60,9 @@ export type EngineCallbacks = {
 
 /** How long a sip takes, start to empty cup. */
 const DRINK_SECONDS = 1.6;
+
+/** How long the opening circle takes to reach the far corner. */
+const REVEAL_SECONDS = 1.5;
 
 function ballBox(pos: Vec2): Rect {
   return {
@@ -132,6 +137,11 @@ export class GameEngine {
       focused: null,
       paused: false,
       lightsOn: theme.id === "bright",
+      reveal: {
+        phase: "curtain",
+        t: 0,
+        center: { x: SPAWN.x, y: SPAWN.y - 8 },
+      },
     };
   }
 
@@ -190,6 +200,10 @@ export class GameEngine {
    * held action starts filling a progress bar and completes when it is full.
    */
   setInteractDown(down: boolean) {
+    if (this.state.reveal.phase !== "open") {
+      if (down) this.beginReveal();
+      return;
+    }
     if (down === this.interactDown) return;
     this.interactDown = down;
     if (!down) {
@@ -213,6 +227,16 @@ export class GameEngine {
 
   releaseInteract() {
     this.setInteractDown(false);
+  }
+
+  /** Opens the room: the lit circle expands out to the corners. */
+  beginReveal() {
+    if (this.state.reveal.phase !== "curtain") return;
+    this.state.reveal.phase = "opening";
+    this.state.reveal.t = 0;
+    // This runs inside the click or key press, which is what lets audio start.
+    this.audio.reveal();
+    this.cb.onStarted();
   }
 
   /** A sip from the carried cup: a short animation, no holding required. */
@@ -315,7 +339,13 @@ export class GameEngine {
   private onKeyDown = (e: KeyboardEvent) => {
     const action = this.keyMap.get(e.code);
     if (action || e.code === "Space") e.preventDefault();
-    if (this.state.paused || e.repeat || !action) return;
+    if (this.state.paused || e.repeat) return;
+    // Under the scrim, the first key is only there to open the room.
+    if (this.state.reveal.phase === "curtain") {
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) this.beginReveal();
+      return;
+    }
+    if (!action) return;
     if (action === "interact") this.setInteractDown(true);
     else this.held.add(action);
   };
@@ -387,6 +417,11 @@ export class GameEngine {
 
   private onPointerDown = (e: PointerEvent) => {
     if (this.state.paused) return;
+    if (this.state.reveal.phase === "curtain") {
+      e.preventDefault();
+      this.beginReveal();
+      return;
+    }
     const at = this.toRoom(e);
     if (this.overPlayer(at)) {
       e.preventDefault();
@@ -465,7 +500,8 @@ export class GameEngine {
 
   private updatePlayer(dt: number) {
     const p = this.state.player;
-    const axis = this.state.paused ? { x: 0, y: 0 } : this.readAxis();
+    const frozen = this.state.paused || this.state.reveal.phase === "curtain";
+    const axis = frozen ? { x: 0, y: 0 } : this.readAxis();
     const moving = axis.x !== 0 || axis.y !== 0;
 
     if (moving) {
@@ -719,6 +755,11 @@ export class GameEngine {
   }
 
   private update(dt: number) {
+    const reveal = this.state.reveal;
+    if (reveal.phase === "opening") {
+      reveal.t = Math.min(1, reveal.t + dt / REVEAL_SECONDS);
+      if (reveal.t >= 1) reveal.phase = "open";
+    }
     this.updatePlayer(dt);
     this.updateHold(dt);
     this.updateBall(dt);

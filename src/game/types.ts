@@ -129,4 +129,15 @@ export type GameState = {
   paused: boolean;
   /** Mirrors the theme so the wall switch can draw itself in the right position. */
   lightsOn: boolean;
+  /**
+   * The opening: the room starts under a scrim with one lit circle, which
+   * expands to fill the frame once the visitor starts it.
+   */
+  reveal: {
+    phase: "curtain" | "opening" | "open";
+    /** 0..1 through the expansion. */
+    t: number;
+    /** Fixed, so walking during the expansion does not drag the circle. */
+    center: Vec2;
+  };
 };

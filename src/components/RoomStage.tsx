@@ -39,6 +39,7 @@ export default function RoomStage({
   const [caught, setCaught] = useState<number[]>([]);
   const [carrying, setCarrying] = useState(false);
   const [visited, setVisited] = useState(0);
+  const [started, setStarted] = useState(false);
   const engineRef = useRef<GameEngine | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const ballLabelRef = useRef<HTMLDivElement>(null);
@@ -109,7 +110,7 @@ export default function RoomStage({
 
   // A first-time visitor gets one instruction at a time: walk, then interact.
   const step: "move" | "interact" | "done" =
-    !moved ? "move" : visited === 0 ? "interact" : "done";
+    !started ? "done" : !moved ? "move" : visited === 0 ? "interact" : "done";
   const showBallLabel = (ballHovered || labelHovered) && !panel;
   const showCard = (hovered || cardHovered) && !panel;
   // Only interactive when there is a button on it to press.
@@ -134,11 +135,27 @@ export default function RoomStage({
           onHoverBall={handleBallHover}
           onCarryChange={setCarrying}
           onVisited={setVisited}
+          onStarted={() => setStarted(true)}
           onFirstMove={() => setMoved(true)}
           onReady={(engine) => {
             engineRef.current = engine;
           }}
         />
+
+        {/* The room is shut until this is answered. */}
+        <div
+          aria-hidden={started}
+          className={`pointer-events-none absolute inset-x-0 top-[24%] z-30 text-center transition-opacity duration-500 ${
+            started ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <p className="animate-prompt font-mono text-[clamp(0.6rem,1.4vw,1rem)] tracking-[0.3em] text-[#ffeccd] uppercase">
+            {t("startPrompt")}
+          </p>
+          <p className="mt-2 font-mono text-[clamp(0.4rem,0.8vw,0.6rem)] tracking-[0.2em] text-[#c2ab8a] uppercase">
+            {t("startHint")}
+          </p>
+        </div>
 
         {/* Name card, shown only while the pointer is on the character. */}
         <div

@@ -20,6 +20,8 @@ export type RoomAudio = {
   /** Running water for as long as the cup is being filled. Returns a stopper. */
   startStream: () => () => void;
   confirm: () => void;
+  /** The room opening up. Doubles as the gesture that unlocks the audio. */
+  reveal: () => void;
   toggleSwitch: (on: boolean) => void;
   dispose: () => void;
 };
@@ -214,6 +216,33 @@ export function createAudio(initial: Options): RoomAudio {
         src.stop(now + 0.16);
         lfo.stop(now + 0.16);
       };
+    },
+
+    reveal() {
+      const at = ensure();
+      if (!at || !noise || !master) return;
+      const t0 = at.currentTime;
+      // A switch throw, then a swell that opens up as the circle does.
+      noiseBurst(at, t0, 0.012, { type: "bandpass", frequency: 3400, q: 1.8 }, 0.18);
+      tone(at, t0 + 0.01, 220, 118, 0.035, 0.07, "triangle");
+
+      const src = at.createBufferSource();
+      src.buffer = noise;
+      src.loop = true;
+      const band = at.createBiquadFilter();
+      band.type = "lowpass";
+      band.frequency.setValueAtTime(300, t0 + 0.05);
+      band.frequency.exponentialRampToValueAtTime(3200, t0 + 1.1);
+      band.Q.value = 0.7;
+      const gain = at.createGain();
+      gain.gain.setValueAtTime(0.0001, t0 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.45);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.4);
+      src.connect(band).connect(gain).connect(master);
+      src.start(t0 + 0.05);
+      src.stop(t0 + 1.5);
+
+      tone(at, t0 + 0.05, 110, 330, 1.1, 0.035, "sine");
     },
 
     confirm() {
