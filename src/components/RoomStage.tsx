@@ -215,7 +215,7 @@ export default function RoomStage({
         </div>
 
         <InteractPrompt
-          target={panel ? null : focused}
+          target={panel || !started ? null : focused}
           touch={touch}
           interactKey={keyLabel(settings.bindings.interact[0])}
           t={t}

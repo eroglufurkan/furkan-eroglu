@@ -44,6 +44,11 @@ export type Project = {
   highlights: readonly string[];
   /** Technology chips. */
   stack: readonly string[];
+  /** Footage the dev station screen can play without leaving the page. */
+  video?: {
+    youtubeId: string;
+    title: string;
+  };
   links: readonly ProjectLink[];
 };
 
@@ -85,8 +90,12 @@ export const PROJECTS: readonly Project[] = [
       "Replication",
       "Server Authority",
     ],
+    video: {
+      youtubeId: "7HYhxSa-HcM",
+      title: "Prototype gameplay",
+    },
     links: [
-      { label: "Watch Gameplay Video", href: LINKS.coopHorrorVideo, primary: true },
+      { label: "Watch on YouTube", href: LINKS.coopHorrorVideo, primary: true },
     ],
   },
 ];
@@ -130,6 +139,8 @@ export type ContactLink = {
   value: string;
   href: string;
   download?: boolean;
+  /** Kept in the list but not rendered. Flip to false to bring it back. */
+  hidden?: boolean;
 };
 
 export const CONTACT: {
@@ -145,6 +156,6 @@ export const CONTACT: {
     },
     { label: "LinkedIn", value: "Connect on LinkedIn", href: LINKS.linkedin },
     { label: "GitHub", value: "@eroglufurkan", href: LINKS.github },
-    { label: "CV", value: "PDF", href: LINKS.cv, download: true },
+    { label: "CV", value: "PDF", href: LINKS.cv, download: true, hidden: true },
   ],
 };

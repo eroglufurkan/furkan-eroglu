@@ -3,7 +3,11 @@ import { PROFILE } from "@/content/portfolio";
 import { THEME_STORAGE_KEY } from "@/game/theme";
 import "./globals.css";
 
+/** Shown on share cards, where there is room for the whole thing. */
 const TITLE = `${PROFILE.name} — ${PROFILE.role}`;
+
+/** The browser tab only gets the first name, so it stays readable when pinned. */
+const TAB_TITLE = PROFILE.name.split(" ")[0];
 const DESCRIPTION =
   "A portfolio you can walk around: a small top-down room with the projects, skills and contact inside. Or read it as a plain page.";
 
@@ -16,7 +20,7 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: TITLE,
+  title: TAB_TITLE,
   description: DESCRIPTION,
   openGraph: {
     title: TITLE,

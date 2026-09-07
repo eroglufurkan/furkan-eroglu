@@ -7,6 +7,7 @@ import type { Settings } from "@/game/settings";
 import type { RoomTheme } from "@/game/theme";
 import type { PanelId } from "@/game/types";
 import CollectionPanel from "./CollectionPanel";
+import DevStationScreen from "./DevStationScreen";
 import PanelShell from "./PanelShell";
 import SettingsPanel from "./SettingsPanel";
 import { ContactBody, ProjectBody, SkillsBody } from "./bodies";
@@ -94,7 +95,12 @@ export default function PanelHost({
     );
   }
 
-  const project = byId(panel === "moriqa" ? "moriqa" : "coop-horror");
+  // The dev station is a screen, not a panel: it takes over the viewport.
+  if (panel === "coop-horror") {
+    return <DevStationScreen project={byId("coop-horror")} onClose={onClose} />;
+  }
+
+  const project = byId("moriqa");
   return (
     <PanelShell
       tag={project.tag}

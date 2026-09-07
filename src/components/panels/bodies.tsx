@@ -104,7 +104,9 @@ export function ContactBody() {
       <p className="text-[15px] leading-relaxed text-bone">{CONTACT.message}</p>
 
       <ul className="divide-y divide-ash-700 border-y border-ash-700">
-        {CONTACT.links.map((link) => (
+        {CONTACT.links
+          .filter((link) => !link.hidden)
+          .map((link) => (
           <li key={link.label} className="flex items-center justify-between gap-4 py-3">
             <div className="min-w-0">
               <p className="font-mono text-[10px] tracking-[0.18em] text-bone-faint uppercase">
