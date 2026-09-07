@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { PROFILE } from "@/content/portfolio";
 import { THEME_STORAGE_KEY } from "@/game/theme";
@@ -58,7 +59,11 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlash }} />
       </head>
-      <body className="min-h-full bg-void text-bone antialiased">{children}</body>
+      <body className="min-h-full bg-void text-bone antialiased">
+        {children}
+        {/* Page views only. No cookies, and it does nothing outside Vercel. */}
+        <Analytics />
+      </body>
     </html>
   );
 }
