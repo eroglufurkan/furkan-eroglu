@@ -493,7 +493,7 @@ const BRIGHT: RoomTheme = {
     cupWater: "#3fb0d8",
     bugOutline: "#59422a",
     marker: "#ef7d00",
-    markerEdge: "#fff6e6",
+    markerEdge: "#fffaf2",
     bugColors: ["#c9982a", "#2f9c5a", "#d9642a", "#3f7fd0", "#9a4fc0"],
   },
   atmosphere: {
